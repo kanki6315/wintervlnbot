@@ -33,7 +33,7 @@ public class InfoExecutor implements CommandExecutor {
         SessionTimes times = new SessionTimes();
 
         if (args.length > 0) {
-            String timeZoneString = args[0];
+            String timeZoneString = args[0].toUpperCase();
             List<String> timezoneList = Arrays.asList(TimeZone.getAvailableIDs());
             if (!timezoneList.stream().anyMatch(str -> str.trim().equals(timeZoneString)) &&
                 !timeZoneString.contains("GMT")) {

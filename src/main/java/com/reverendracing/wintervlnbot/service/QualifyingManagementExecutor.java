@@ -142,7 +142,7 @@ public class QualifyingManagementExecutor implements CommandExecutor {
             String solo = args[1];
             if(!solo.equalsIgnoreCase("s")) {
                 new MessageBuilder()
-                        .append("2nd argument must be empty or S, not ")
+                        .append("2nd input must be S, not ")
                         .append(args[1], MessageDecoration.BOLD)
                         .append(". Please try again.")
                         .send(announcementChannel);

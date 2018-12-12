@@ -41,7 +41,9 @@ public class UserNicknameChangeListener implements UserChangeNicknameListener {
         new MessageBuilder()
                 .append("Nickname update: ")
                 .append(event.getNewNickname().get(), MessageDecoration.BOLD)
-                .append(". Do you you want to assign the driver role to this user?")
+                .append(String.format(
+                        ". Do you you want to assign the %s role to this user?",
+                        roleName))
                 .send(adminChannel)
         .thenAcceptAsync(message -> {
             message.addReactionAddListener(new ReactionAddListener() {
@@ -49,8 +51,10 @@ public class UserNicknameChangeListener implements UserChangeNicknameListener {
                 public void onReactionAdd(ReactionAddEvent reaction) {
                     if (reaction.getEmoji().equalsEmoji("👍")) {
                         user.addRole(role);
+                        reaction.addReactionToMessage("👌");
                         reaction.getApi().removeListener(this);
                     } else if(reaction.getEmoji().equalsEmoji("👎")) {
+                        reaction.addReactionToMessage("👌");
                         reaction.getApi().removeListener(this);
                     }
                 }
