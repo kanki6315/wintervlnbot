@@ -34,7 +34,8 @@ dependencies {
 
 	implementation 'de.btobastian.sdcf4j:sdcf4j-core:v1.0.10'
 	implementation 'de.btobastian.sdcf4j:sdcf4j-javacord:v1.0.10'
+	
+	implementation 'com.microsoft.signalr:signalr:1.0.0'
 
-	compile 'com.squareup.okhttp3:okhttp:3.12.0'
-
+	implementation 'org.apache.commons:commons-lang3:3.5'
 }

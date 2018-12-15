@@ -14,13 +14,13 @@ import java.time.format.DateTimeFormatter;
 
 public class SessionTimes {
 
-    String sessionStartTime;
-    String qualifyingStartTime;
-    String formationLapTime;
-    String raceStartTime;
+    private String sessionStartTime;
+    private String qualifyingStartTime;
+    private String formationLapTime;
+    private String raceStartTime;
 
     public SessionTimes() {
-        this.sessionStartTime = "10:00";
+        this.sessionStartTime = "10:45";
         this.qualifyingStartTime = "12:30";
         this.formationLapTime = "13:45";
         this.raceStartTime = "14:00";

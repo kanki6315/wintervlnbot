@@ -38,6 +38,9 @@ public class AppConfig {
     @Value("${discord.qualifying.api_endpoint}")
     private String qualifyingRestEndpoint;
 
+    @Value("${discord.info.entry_list}")
+    private String entryListUrl;
+
     @Bean
     public DiscordApi api(){
 
@@ -61,7 +64,7 @@ public class AppConfig {
 
     @Bean
     public InfoExecutor infoExecutor() {
-        return new InfoExecutor();
+        return new InfoExecutor(entryListUrl);
     }
 
     @Bean
