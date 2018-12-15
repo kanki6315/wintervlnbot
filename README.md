@@ -9,6 +9,16 @@ This bot provides tools for league organizers to manage their league discord thr
 * Allows teams to convert session times to their local timezones
 * Enables a "black flag clearance" request for qualifying. This is used for the Nurburbring-Nordschliefe, allowing teams to shortcut the GP circuit instead of doing a full 7+ minute outlap.
 
+### General Command List
+* `!session [Timezone Code | optional]`
+* `!entryList`
+* `!help`
+### Qualifying Commands
+* `!enableQuali` - Admin only
+* `!disableQuali` - Admin only
+* `!restartSocket` - Admin only
+* `!q [Car Number] [S (Solo) | optional]`
+
 ## Getting Started
 
 ### Pre-Requisites
