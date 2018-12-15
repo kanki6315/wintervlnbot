@@ -53,6 +53,7 @@ chmod u+x startBot.sh
 
 Create the service start file, and configure it correctly.
 ```sudo vi /etc/systemd/system/wintervlnbot.service```
+
 ```
 [Unit]
 Description=Winter-VLN Bot
@@ -65,7 +66,8 @@ SuccessExitStatus=143
 Restart=always
 
 [Install]
-WantedBy=multi-user.target```
+WantedBy=multi-user.target
+```
 
 After this, you can update the systemd configuration to read your new service, enable it, and then start it. You can also view the logs with the last command.
 ```
