@@ -23,7 +23,7 @@ This bot provides tools for league organizers to manage their league discord thr
 
 ### Pre-Requisites
 
-Before you can begin, you need to create a discord bot and add the token to the application.properties file.[You can find instructions here] (https://javacord.org/wiki/essential-knowledge/creating-a-bot-account/). This guide will also show you how to invite the bot into your discord server.
+Before you can begin, you need to create a discord bot and add the token to the application.properties file. [You can find instructions here](https://javacord.org/wiki/essential-knowledge/creating-a-bot-account/). This guide will also show you how to invite the bot into your discord server.
 
 If you wish to have any of the prior functionality built into the bot, you will need to enter your own SignalR hub endpoint that implements the 2 socket calls we use. These are described in the Socket section later.
 
