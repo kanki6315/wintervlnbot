@@ -3,7 +3,7 @@
  * All Rights Reserved.
  */
 
-package com.reverendracing.wintervlnbot.util;
+package com.reverendracing.wintervlnbot.util.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

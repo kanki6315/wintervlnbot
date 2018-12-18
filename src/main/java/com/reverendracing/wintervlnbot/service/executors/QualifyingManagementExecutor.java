@@ -3,24 +3,25 @@
  * All Rights Reserved.
  */
 
-package com.reverendracing.wintervlnbot.service;
+package com.reverendracing.wintervlnbot.service.executors;
 
-import java.util.Collection;
-import java.util.List;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.getChannelByName;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.hasAdminPermission;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyChecked;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyFailed;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.sendStackTraceToChannel;
+
 import java.util.function.Function;
 
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import io.reactivex.Completable;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
-import org.javacord.api.entity.permission.PermissionType;
-import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.slf4j.LoggerFactory;
@@ -28,22 +29,25 @@ import org.slf4j.LoggerFactory;
 import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
-import com.reverendracing.wintervlnbot.util.BlackFlagMessage;
+import com.reverendracing.wintervlnbot.util.model.BlackFlagMessage;
 
 public class QualifyingManagementExecutor implements CommandExecutor {
 
     private boolean qualiEnabled;
 
     private String qualifyingAnnouncementChannel;
+    private String adminChannel;
     private String restApiUrl;
 
     private HubConnection socket;
 
     public QualifyingManagementExecutor(
             final String qualifyingAnnouncementChannel,
+            final String adminChannel,
             final String restApiUrl) {
 
         this.qualifyingAnnouncementChannel = qualifyingAnnouncementChannel;
+        this.adminChannel = adminChannel;
         this.restApiUrl = restApiUrl;
 
         qualiEnabled = false;
@@ -77,10 +81,10 @@ public class QualifyingManagementExecutor implements CommandExecutor {
     @Command(aliases = "!enablequali", description = "Enable qualifying for all users", showInHelpPage = false)
     public void onQualiEnable(Message message, Server server, User user, TextChannel channel) {
 
-        if(!isAdmin(server, user))
+        if(!hasAdminPermission(server, user))
             return;
 
-        enableQuali(channel);
+        enableQuali(server);
         if(qualiEnabled) {
             announceQualifyingState("Open!", server);
             notifyChecked(message);
@@ -92,10 +96,10 @@ public class QualifyingManagementExecutor implements CommandExecutor {
     @Command(aliases = "!disablequali", description = "Disable qualifying for all users", showInHelpPage = false)
     public void onQualiDisable(Message message, Server server, User user, TextChannel channel) {
 
-        if(!isAdmin(server, user))
+        if(!hasAdminPermission(server, user))
             return;
 
-        disableQuali(channel);
+        disableQuali(server);
         if(!qualiEnabled) {
             announceQualifyingState("Closed!", server);
             notifyChecked(message);
@@ -105,26 +109,17 @@ public class QualifyingManagementExecutor implements CommandExecutor {
     }
 
     @Command(aliases = "!restartsocket", description = "Reset Socket", showInHelpPage = false)
-    public void onRestartSocket(Message message, Server server, User user, TextChannel channel) {
+    public void onRestartSocket(Message message, Server server, User user) {
 
-        if(!isAdmin(server, user))
+        if(!hasAdminPermission(server, user))
             return;
 
-        if(restartSocket(channel, message)) {
+        if(restartSocket(server, message)) {
             announceQualifyingState("Open!", server);
             notifyChecked(message);
         } else {
             notifyFailed(message);
         }
-    }
-
-    private boolean isAdmin(Server server, User user) {
-
-        List<Role> roles = user.getRoles(server);
-        return roles.stream()
-                .map(Role::getAllowedPermissions)
-                .flatMap(Collection::stream)
-                .anyMatch(role -> role.equals(PermissionType.ADMINISTRATOR));
     }
 
     private void announceQualifyingState(final String state, final Server server) {
@@ -136,19 +131,6 @@ public class QualifyingManagementExecutor implements CommandExecutor {
                 .append(state, MessageDecoration.BOLD)
                 .append("!")
                 .send(announcementChannel);
-    }
-
-    private ServerTextChannel getAnnouncementChannel(final Server server) {
-        List<ServerTextChannel> searchChannels = server.getTextChannelsByName(qualifyingAnnouncementChannel);
-        return searchChannels.get(0);
-    }
-
-    private void notifyChecked(Message message) {
-        message.addReaction("👍");
-    }
-
-    private void notifyFailed(Message message) {
-        message.addReaction("👎");
     }
 
     private void sendBlackFlagRequest(
@@ -185,7 +167,7 @@ public class QualifyingManagementExecutor implements CommandExecutor {
         }
 
         if(socket.getConnectionState().equals(HubConnectionState.DISCONNECTED)) {
-            boolean restartConnection = startSocket(announcementChannel);
+            boolean restartConnection = startSocket(server);
 
             if(!restartConnection) {
                 announceQualifyingState("Suspended!", server);
@@ -198,9 +180,9 @@ public class QualifyingManagementExecutor implements CommandExecutor {
         notifyChecked(message);
     }
 
-    private void enableQuali(TextChannel channel) {
+    private void enableQuali(Server server) {
 
-        boolean startSocket = startSocket(channel);
+        boolean startSocket = startSocket(server);
 
         if(startSocket) {
             LoggerFactory.getLogger(QualifyingManagementExecutor.class).info(
@@ -211,25 +193,25 @@ public class QualifyingManagementExecutor implements CommandExecutor {
         }
     }
 
-    private void disableQuali(TextChannel channel) {
+    private void disableQuali(Server server) {
 
-        boolean stopSocket = handleSocketConnection(HubConnection::stop, channel);
+        boolean stopSocket = handleSocketConnection(HubConnection::stop, server);
 
         if(stopSocket) {
             qualiEnabled = false;
         }
     }
 
-    private boolean restartSocket(TextChannel channel, Message message) {
+    private boolean restartSocket(Server server, Message message) {
 
-        boolean stopSocket = handleSocketConnection(HubConnection::stop, channel);
+        boolean stopSocket = handleSocketConnection(HubConnection::stop, server);
 
         if(!stopSocket) {
             notifyFailed(message);
             return false;
         }
 
-        boolean startSocket = startSocket(channel);
+        boolean startSocket = startSocket(server);
 
         if(!startSocket) {
             notifyFailed(message);
@@ -238,13 +220,14 @@ public class QualifyingManagementExecutor implements CommandExecutor {
         return true;
     }
 
-    private boolean startSocket(TextChannel channel) {
+    private boolean startSocket(Server server) {
+
         if(socket == null)
             socket = HubConnectionBuilder
                     .create(restApiUrl)
                     .build();
 
-        boolean startSocket = handleSocketConnection(HubConnection::start, channel);
+        boolean startSocket = handleSocketConnection(HubConnection::start, server);
 
         if(!startSocket)
             return false;
@@ -255,21 +238,21 @@ public class QualifyingManagementExecutor implements CommandExecutor {
 
     private boolean handleSocketConnection(
             final Function<HubConnection, Completable> socketFunction,
-            final TextChannel channel) {
+            final Server server) {
 
         Completable completable = socketFunction.apply(socket);
         Throwable error = completable.blockingGet();
 
         if(error != null) {
-            if(channel != null) {
-                new MessageBuilder()
-                        .append("Unable to manage connection to hub.")
-                        .appendCode("java", error.getMessage())
-                        .appendCode("java", ExceptionUtils.getStackTrace(error))
-                        .send(channel);
-            }
+            sendStackTraceToChannel(
+                    "Unable to manage connection to hub.",
+                    getChannelByName(adminChannel, server), error);
             return false;
         }
         return true;
+    }
+
+    private ServerTextChannel getAnnouncementChannel(Server server) {
+        return getChannelByName(qualifyingAnnouncementChannel, server);
     }
 }

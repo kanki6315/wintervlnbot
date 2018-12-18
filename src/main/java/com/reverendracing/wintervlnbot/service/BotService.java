@@ -11,6 +11,11 @@ import de.btobastian.sdcf4j.handler.JavacordHandler;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.activity.ActivityType;
 
+import com.reverendracing.wintervlnbot.service.executors.HelpExecutor;
+import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
+import com.reverendracing.wintervlnbot.service.executors.QualifyingManagementExecutor;
+import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
+
 public class BotService {
 
     private final DiscordApi api;
@@ -18,6 +23,7 @@ public class BotService {
     private final UserNicknameChangeListener userNicknameChangeListener;
     private final QualifyingManagementExecutor qualifyingManagementExecutor;
     private final InfoExecutor infoExecutor;
+    private final QueryExecutor queryExecutor;
 
     private CommandHandler handler;
 
@@ -25,11 +31,14 @@ public class BotService {
             DiscordApi api,
             UserNicknameChangeListener userNicknameChangeListener,
             QualifyingManagementExecutor qualifyingManagementExecutor,
-            InfoExecutor infoExecutor) {
+            InfoExecutor infoExecutor,
+            QueryExecutor queryExecutor) {
+
         this.api = api;
         this.userNicknameChangeListener = userNicknameChangeListener;
         this.qualifyingManagementExecutor = qualifyingManagementExecutor;
         this.infoExecutor = infoExecutor;
+        this.queryExecutor = queryExecutor;
     }
 
     public Boolean startBot() {
@@ -39,6 +48,7 @@ public class BotService {
         handler = new JavacordHandler(api);
         handler.registerCommand(infoExecutor);
         handler.registerCommand(qualifyingManagementExecutor);
+        handler.registerCommand(queryExecutor);
         handler.registerCommand(new HelpExecutor(handler));
 
         api.addUserChangeNicknameListener(userNicknameChangeListener);

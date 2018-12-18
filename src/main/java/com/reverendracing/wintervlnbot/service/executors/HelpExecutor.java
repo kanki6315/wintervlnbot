@@ -3,7 +3,7 @@
  * All Rights Reserved.
  */
 
-package com.reverendracing.wintervlnbot.service;
+package com.reverendracing.wintervlnbot.service.executors;
 
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;

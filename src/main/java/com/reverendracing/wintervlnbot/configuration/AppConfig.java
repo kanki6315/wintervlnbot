@@ -5,66 +5,45 @@
 
 package com.reverendracing.wintervlnbot.configuration;
 
+import java.sql.SQLException;
 import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 
+import org.h2.tools.Server;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Scope;
 
+import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.BotService;
-import com.reverendracing.wintervlnbot.service.InfoExecutor;
-import com.reverendracing.wintervlnbot.service.QualifyingManagementExecutor;
 import com.reverendracing.wintervlnbot.service.UserNicknameChangeListener;
+import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
+import com.reverendracing.wintervlnbot.service.executors.QualifyingManagementExecutor;
+import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
+import com.reverendracing.wintervlnbot.service.rest.SheetsManager;
 
 @Configuration
+@Import({ExecutorConfig.class, ListenerConfig.class})
 public class AppConfig {
 
     @Value("${discord.api.token}")
     private String apiToken;
 
-    @Value("${discord.username_listener.message_channel}")
-    private String usernameListenerChannelMessageName;
+    @Value("${discord.sheets.id}")
+    private String sheetId;
 
-    @Value("${discord.username_listener.role}")
-    private String usernameListenerRole;
-
-    @Value("${discord.qualifying.message_channel}")
-    private String qualifyingChannelMessageName;
-
-    @Value("${discord.qualifying.api_endpoint}")
-    private String qualifyingRestEndpoint;
-
-    @Value("${discord.info.entry_list}")
-    private String entryListUrl;
+    @Value("${discord.sheets.range}")
+    private String sheetRange;
 
     @Bean
     public DiscordApi api(){
 
-        DiscordApi api = new DiscordApiBuilder().setToken(apiToken).login().join();
-        return api;
-    }
-
-    @Bean
-    public UserNicknameChangeListener userNicknameChangeListener() {
-        return new UserNicknameChangeListener(
-                usernameListenerChannelMessageName,
-                usernameListenerRole);
-    }
-
-    @Bean
-    public QualifyingManagementExecutor qualifyingManagementExecutor() {
-        return new QualifyingManagementExecutor(
-                qualifyingChannelMessageName,
-                qualifyingRestEndpoint);
-    }
-
-    @Bean
-    public InfoExecutor infoExecutor() {
-        return new InfoExecutor(entryListUrl);
+        return new DiscordApiBuilder().setToken(apiToken).login().join();
     }
 
     @Bean
@@ -72,12 +51,31 @@ public class AppConfig {
             DiscordApi api,
             UserNicknameChangeListener userNicknameChangeListener,
             QualifyingManagementExecutor qualifyingManagementExecutor,
-            InfoExecutor infoExecutor) {
+            InfoExecutor infoExecutor,
+            QueryExecutor queryExecutor) {
+
         return new BotService(
                 api,
                 userNicknameChangeListener,
                 qualifyingManagementExecutor,
-                infoExecutor);
+                infoExecutor,
+                queryExecutor);
+    }
+
+    @Bean
+    @Scope("singleton")
+    public SheetsManager sheetsManager(
+            EntryRepository entryRepository) {
+        return new SheetsManager(
+                entryRepository,
+                sheetId,
+                sheetRange);
+    }
+
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public Server inMemoryH2DatabaseaServer() throws SQLException {
+        return Server.createTcpServer(
+                "-tcp", "-tcpAllowOthers", "-tcpPort", "9090");
     }
 
     @PostConstruct
