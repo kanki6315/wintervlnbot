@@ -74,7 +74,7 @@ public class QueryExecutor implements CommandExecutor {
         }
     }
 
-    @Command(aliases = "!driver", description = "Get team details by name or number", usage = "!team [Team name or number]")
+    @Command(aliases = "!driver", description = "Get Driver details by name or number", usage = "!driver [Team name or number]")
     public void onDriverQuery(String[] args, Message message, Server server, User user, TextChannel channel) {
 
         if(!(isRole(server, user, protectedRoleName) || hasAdminPermission(server, user)))
