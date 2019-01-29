@@ -23,7 +23,7 @@ import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.BotService;
 import com.reverendracing.wintervlnbot.service.UserNicknameChangeListener;
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
-import com.reverendracing.wintervlnbot.service.executors.QualifyingManagementExecutor;
+import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
 import com.reverendracing.wintervlnbot.service.rest.SheetsManager;
 
@@ -50,14 +50,14 @@ public class AppConfig {
     public BotService botService(
             DiscordApi api,
             UserNicknameChangeListener userNicknameChangeListener,
-            QualifyingManagementExecutor qualifyingManagementExecutor,
+            RaceControlExecutor raceControlExecutor,
             InfoExecutor infoExecutor,
             QueryExecutor queryExecutor) {
 
         return new BotService(
                 api,
                 userNicknameChangeListener,
-                qualifyingManagementExecutor,
+                raceControlExecutor,
                 infoExecutor,
                 queryExecutor);
     }

@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
-import com.reverendracing.wintervlnbot.service.executors.QualifyingManagementExecutor;
+import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
 import com.reverendracing.wintervlnbot.service.rest.SheetsManager;
 
@@ -43,9 +43,10 @@ public class ExecutorConfig {
 
 
     @Bean
-    public QualifyingManagementExecutor qualifyingManagementExecutor() {
+    public RaceControlExecutor qualifyingManagementExecutor() {
 
-        return new QualifyingManagementExecutor(
+        return new RaceControlExecutor(
+                qualifyingChannelMessageName,
                 qualifyingChannelMessageName,
                 adminChannel,
                 qualifyingRestEndpoint);
