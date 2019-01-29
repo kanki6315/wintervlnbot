@@ -13,8 +13,10 @@ This bot provides tools for league organizers to manage their league discord thr
 * Enables a "black flag clearance" request for qualifying. This is used for the Nurburbring-Nordschliefe, allowing teams to shortcut the GP circuit instead of doing a full 7+ minute outlap.
 
 ### General Command List
+* `!invite`
 * `!session [Timezone Code | optional]`
 * `!entryList`
+* `!standings`
 * `!changeForm` - Restricted to certain roles
 * `!help`
 ### Query Commands
@@ -22,7 +24,7 @@ All these commands are restricted to the role that can be configured in the prop
 * `!team [Team Name or Number]`
 * `!driver [Team Name or Number]`
 ### Qualifying Commands
-The qualifying managment commands can only be issued by an admin. Once qualifying is enabled, only messages sent to a specific channel that is configured in the properties file will be read by the bot.
+The qualifying management commands can only be issued by an admin. Once qualifying is enabled, only messages sent to a specific channel that is configured in the properties file will be read by the bot.
 * `!enableQuali` - Admin only
 * `!disableQuali` - Admin only
 * `!restartSocket` - Admin only
@@ -104,7 +106,7 @@ If you find your build is getting stuck, try adding the debug option to your bui
 ./gradlew build --no-daemon --debug
 ```
 
-If your build is failing with a null pointer or similar error, it is likely that you are missing the `credential.json` file. 
+If your build is failing with a null pointer or similar error, it is likely that you are missing the `credential.json` file.
 
 Since the "test" is spinning up the full ApplicationContext, you will get errors if you try to build with the bot already running persistently as currently configured. You will need to stop the bot in order to build it.
 ## Socket
@@ -121,8 +123,8 @@ socket.send("AddBlackFlag", new BlackFlagMessage(number, args.length > 1));
 ### Model
 The bot currently reads all entries direct from a Google Sheet spreadsheet that the league organizers have built to accept input from a Google Form. As described earlier, to avoid parsing errors, you will have to ensure you have the exact column names in your sheet. If you wish to just change the header for a specific column, you can do this by updating the header value in `CsvInputs`. If you wish to add or remove fields, you will need to update both the `CsvInputs` and `Entry` file to represent the data correctly.
 ### Connecting to Sheets
-When you start up the bot for the first time, it will output an oauth url and deploy a listener on `localhost` and wait for a callback. This blocks the bot from completing startup until you finish the oauth callback step. If you are running on a server, you must copy this link to your local browser, and then copy the redirect url back to the server and run it using curl in a separate browser. After you have authenticated for the first time, a `tokens` directory is created to store a refresh token, meaning you should not have to perform this step again. 
+When you start up the bot for the first time, it will output an oauth url and deploy a listener on `localhost` and wait for a callback. This blocks the bot from completing startup until you finish the oauth callback step. If you are running on a server, you must copy this link to your local browser, and then copy the redirect url back to the server and run it using curl in a separate browser. After you have authenticated for the first time, a `tokens` directory is created to store a refresh token, meaning you should not have to perform this step again.
 ### Queries & Output Formatting
-Currently, each row of our Entry List Google Sheet is read into our local database as a single `Entry` entity. With the SDCF4J library, we get each individual argument into the query in an array. At this time, we just combine this array into a single search query, and query the team name and team number. We do this using Spring Queries which translate from a function name to an SQL query `findByCarNumberLikeOrTeamNameContainsIgnoreCase`. [For more information on Spring Repositories, click here](https://docs.spring.io/spring-data/jpa/docs/1.4.2.RELEASE/reference/html/jpa.repositories.html). Much more complicated queries could be built out, and we could even support breaking out drivers into their own entity, and allow querying on them. 
+Currently, each row of our Entry List Google Sheet is read into our local database as a single `Entry` entity. With the SDCF4J library, we get each individual argument into the query in an array. At this time, we just combine this array into a single search query, and query the team name and team number. We do this using Spring Queries which translate from a function name to an SQL query `findByCarNumberLikeOrTeamNameContainsIgnoreCase`. [For more information on Spring Repositories, click here](https://docs.spring.io/spring-data/jpa/docs/1.4.2.RELEASE/reference/html/jpa.repositories.html). Much more complicated queries could be built out, and we could even support breaking out drivers into their own entity, and allow querying on them.
 
 Output formatting is done using the `console-table-builder` library and has been broken out into the `QueryFormatter` class. We iterate over all matching entries to produce individual ordered Lists to store each columns information. We can then use the Java Stream API to easily determine the length of the longest value in each column to dynamically determine the width for each column.

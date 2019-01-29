@@ -51,6 +51,8 @@ public class BotService {
         handler.registerCommand(queryExecutor);
         handler.registerCommand(new HelpExecutor(handler));
 
+        api.addReconnectListener(event -> event.getApi().updateActivity(ActivityType.PLAYING, "!help to learn more!"));
+
         api.addUserChangeNicknameListener(userNicknameChangeListener);
 
 
