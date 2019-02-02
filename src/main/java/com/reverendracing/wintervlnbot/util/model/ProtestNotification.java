@@ -6,36 +6,55 @@ package com.reverendracing.wintervlnbot.util.model;
 
 public class ProtestNotification {
 
-    private String incidentId;
-    private String reportedCarNumber;
-    private String investigatingCarNumber;
+    private int protestingCarNumber;
+    private int offendingCarNumber;
+    private int lap;
+    private String sector;
+    private String timeStamp;
     private String reason;
+    private String description;
 
     public ProtestNotification() {
     }
 
-    public String getIncidentId() {
-        return incidentId;
+    public int getProtestingCarNumber() {
+        return protestingCarNumber;
     }
 
-    public void setIncidentId(String incidentId) {
-        this.incidentId = incidentId;
+    public void setProtestingCarNumber(int protestingCarNumber) {
+        this.protestingCarNumber = protestingCarNumber;
     }
 
-    public String getReportedCarNumber() {
-        return reportedCarNumber;
+    public int getOffendingCarNumber() {
+        return offendingCarNumber;
     }
 
-    public void setReportedCarNumber(String reportedCarNumber) {
-        this.reportedCarNumber = reportedCarNumber;
+    public void setOffendingCarNumber(int offendingCarNumber) {
+        this.offendingCarNumber = offendingCarNumber;
     }
 
-    public String getInvestigatingCarNumber() {
-        return investigatingCarNumber;
+    public int getLap() {
+        return lap;
     }
 
-    public void setInvestigatingCarNumber(String investigatingCarNumber) {
-        this.investigatingCarNumber = investigatingCarNumber;
+    public void setLap(int lap) {
+        this.lap = lap;
+    }
+
+    public String getSector() {
+        return sector;
+    }
+
+    public void setSector(String sector) {
+        this.sector = sector;
+    }
+
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     public String getReason() {
@@ -44,5 +63,13 @@ public class ProtestNotification {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

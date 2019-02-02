@@ -228,7 +228,7 @@ public class RaceControlExecutor implements CommandExecutor {
     private boolean startSocket(Server server) {
 
         if(socket == null) {
-            socket = buildConnectionAndMethods();
+            socket = buildConnectionAndMethods(server);
         }
         else if(isConnected()) {
             return true;
@@ -263,18 +263,46 @@ public class RaceControlExecutor implements CommandExecutor {
         return true;
     }
 
-    private HubConnection buildConnectionAndMethods() {
+    private HubConnection buildConnectionAndMethods(Server server) {
 
         HubConnection connection = HubConnectionBuilder
                 .create(restApiUrl)
                 .build();
-        connection.on("ProtestNotification", (protestNotification) -> {
-
-
+        connection.on("AnnounceProtest", (protestNotification) -> {
+            ServerTextChannel channel = getAnnouncementChannel(server);
+            new MessageBuilder()
+                    .append("Incident under investigation. Cars ")
+                    .append(Integer.toString(protestNotification.getProtestingCarNumber()), MessageDecoration.BOLD)
+                    .append(" & ")
+                    .append(Integer.toString(protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
+                    .append(" for ")
+                    .append(protestNotification.getReason())
+                    .send(channel);
         }, ProtestNotification.class);
-        connection.on("DecisionNotification", (decisionNotification) -> {
+        connection.on("AnnounceDecision", (decisionNotification) -> {
 
-
+            ServerTextChannel channel = getAnnouncementChannel(server);
+            if(decisionNotification.getDecision().equals("No Further Action")) {
+                new MessageBuilder()
+                        .append("No Further Action. Cars ")
+                        .append(Integer.toString(decisionNotification.getReportingCarNumber()), MessageDecoration.BOLD)
+                        .append(" & ")
+                        .append(Integer.toString(decisionNotification.getInvestigatingCarNumber()), MessageDecoration.BOLD)
+                        .append(" for ")
+                        .append(decisionNotification.getReason())
+                        .send(channel);
+            }
+            else {
+                new MessageBuilder()
+                        .append(decisionNotification.getDecision())
+                        .append(" - ")
+                        .append(decisionNotification.getReason(), MessageDecoration.BOLD)
+                        .append(" - ")
+                        .append(Integer.toString(decisionNotification.getInvestigatingCarNumber()), MessageDecoration.BOLD)
+                        .append(" - ")
+                        .append(decisionNotification.getPenalty(), MessageDecoration.BOLD)
+                        .send(channel);
+            }
         }, DecisionNotification.class);
 
         return connection;

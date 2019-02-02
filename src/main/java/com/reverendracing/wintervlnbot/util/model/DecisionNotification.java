@@ -6,43 +6,52 @@ package com.reverendracing.wintervlnbot.util.model;
 
 public class DecisionNotification {
 
-    private String incidentDecision;
-    private String incidentReason;
-    private String incidentCarNumber;
-    private String incidentPenalty;
+    public String decision;
+    public String reason;
+    public int reportingCarNumber;
+    public int investigatingCarNumber;
+    public String penalty;
 
     public DecisionNotification() {
     }
 
-    public String getIncidentDecision() {
-        return incidentDecision;
+    public String getDecision() {
+        return decision;
     }
 
-    public void setIncidentDecision(String incidentDecision) {
-        this.incidentDecision = incidentDecision;
+    public void setDecision(String decision) {
+        this.decision = decision;
     }
 
-    public String getIncidentReason() {
-        return incidentReason;
+    public String getReason() {
+        return reason;
     }
 
-    public void setIncidentReason(String incidentReason) {
-        this.incidentReason = incidentReason;
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
-    public String getIncidentCarNumber() {
-        return incidentCarNumber;
+    public int getReportingCarNumber() {
+        return reportingCarNumber;
     }
 
-    public void setIncidentCarNumber(String incidentCarNumber) {
-        this.incidentCarNumber = incidentCarNumber;
+    public void setReportingCarNumber(int reportingCarNumber) {
+        this.reportingCarNumber = reportingCarNumber;
     }
 
-    public String getIncidentPenalty() {
-        return incidentPenalty;
+    public int getInvestigatingCarNumber() {
+        return investigatingCarNumber;
     }
 
-    public void setIncidentPenalty(String incidentPenalty) {
-        this.incidentPenalty = incidentPenalty;
+    public void setInvestigatingCarNumber(int investigatingCarNumber) {
+        this.investigatingCarNumber = investigatingCarNumber;
+    }
+
+    public String getPenalty() {
+        return penalty;
+    }
+
+    public void setPenalty(String penalty) {
+        this.penalty = penalty;
     }
 }
