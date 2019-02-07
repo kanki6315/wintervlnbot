@@ -42,7 +42,7 @@ public class ExecutorConfig {
     @Value("${discord.info.invite_channel}")
     private String inviteChannelName;
 
-    @Value("${discord.qualifying.message_channel}")
+    @Value("${discord.protests.message_channel}")
     private String protestChannelName;
 
 

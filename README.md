@@ -11,6 +11,7 @@ This bot provides tools for league organizers to manage their league discord thr
 * Enables teams to request for forms as needed, instead of managing a channel of forms
 * Reads entry list from Google Sheets, and allows teams to query and validate they are registered correctly.
 * Enables a "black flag clearance" request for qualifying. This is used for the Nurburbring-Nordschliefe, allowing teams to shortcut the GP circuit instead of doing a full 7+ minute outlap.
+* Uses a SignalR socket to announce protest entries and decisions automatically in a configured channel.
 
 ### General Command List
 * `!invite`
@@ -23,11 +24,13 @@ This bot provides tools for league organizers to manage their league discord thr
 All these commands are restricted to the role that can be configured in the properties file.
 * `!team [Team Name or Number]`
 * `!driver [Team Name or Number]`
-### Qualifying Commands
-The qualifying management commands can only be issued by an admin. Once qualifying is enabled, only messages sent to a specific channel that is configured in the properties file will be read by the bot.
-* `!enableQuali` - Admin only
-* `!disableQuali` - Admin only
-* `!restartSocket` - Admin only
+### Race Control Commands
+The race control commands can only be issued by an admin. Once qualifying is enabled, only messages sent to a specific channel that is configured in the properties file will be read by the bot.
+* `!startsocket` - Admin only
+* `!stopsocket` - Admin only
+* `!enablequali` - Admin only
+* `!disablequali` - Admin only
+* `!restartsocket` - Admin only
 * `!q [Car Number] [S (Solo) | optional]`
 
 ## Getting Started
