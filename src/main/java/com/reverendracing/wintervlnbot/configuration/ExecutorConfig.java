@@ -5,6 +5,7 @@
 
 package com.reverendracing.wintervlnbot.configuration;
 
+import org.javacord.api.DiscordApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,13 +42,19 @@ public class ExecutorConfig {
     @Value("${discord.info.invite_channel}")
     private String inviteChannelName;
 
+    @Value("${discord.qualifying.message_channel}")
+    private String protestChannelName;
+
+
 
     @Bean
-    public RaceControlExecutor qualifyingManagementExecutor() {
+    public RaceControlExecutor qualifyingManagementExecutor(
+            DiscordApi api) {
 
         return new RaceControlExecutor(
+                api,
                 qualifyingChannelMessageName,
-                qualifyingChannelMessageName,
+                protestChannelName,
                 adminChannel,
                 qualifyingRestEndpoint);
     }

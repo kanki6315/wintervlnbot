@@ -19,6 +19,7 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import io.reactivex.Completable;
 
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
@@ -43,14 +44,17 @@ public class RaceControlExecutor implements CommandExecutor {
     private String adminChannel;
     private String restApiUrl;
 
+    private DiscordApi api;
     private HubConnection socket;
 
     public RaceControlExecutor(
+            final DiscordApi api,
             final String qualifyingAnnouncementChannel,
             final String protestAnnouncementChannel,
             final String adminChannel,
             final String restApiUrl) {
 
+        this.api = api;
         this.qualifyingAnnouncementChannel = qualifyingAnnouncementChannel;
         this.protestAnnouncementChannel = protestAnnouncementChannel;
         this.adminChannel = adminChannel;
@@ -228,7 +232,7 @@ public class RaceControlExecutor implements CommandExecutor {
     private boolean startSocket(Server server) {
 
         if(socket == null) {
-            socket = buildConnectionAndMethods(server);
+            socket = buildConnectionAndMethods();
         }
         else if(isConnected()) {
             return true;
@@ -263,43 +267,43 @@ public class RaceControlExecutor implements CommandExecutor {
         return true;
     }
 
-    private HubConnection buildConnectionAndMethods(Server server) {
+    private HubConnection buildConnectionAndMethods() {
 
         HubConnection connection = HubConnectionBuilder
                 .create(restApiUrl)
                 .build();
         connection.on("AnnounceProtest", (protestNotification) -> {
-            ServerTextChannel channel = getAnnouncementChannel(server);
+            ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
             new MessageBuilder()
                     .append("Incident under investigation. Cars ")
-                    .append(Integer.toString(protestNotification.getProtestingCarNumber()), MessageDecoration.BOLD)
+                    .append(String.format("#%d",protestNotification.getProtestingCarNumber()), MessageDecoration.BOLD)
                     .append(" & ")
-                    .append(Integer.toString(protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
-                    .append(" for ")
-                    .append(protestNotification.getReason())
+                    .append(String.format("#%d", protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
+                    .append(" - ")
+                    .append(protestNotification.getReason(), MessageDecoration.BOLD)
                     .send(channel);
         }, ProtestNotification.class);
         connection.on("AnnounceDecision", (decisionNotification) -> {
 
-            ServerTextChannel channel = getAnnouncementChannel(server);
+            ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
             if(decisionNotification.getDecision().equals("No Further Action")) {
                 new MessageBuilder()
                         .append("No Further Action. Cars ")
-                        .append(Integer.toString(decisionNotification.getReportingCarNumber()), MessageDecoration.BOLD)
+                        .append(String.format("#%d", decisionNotification.getOtherCarNumber()), MessageDecoration.BOLD)
                         .append(" & ")
-                        .append(Integer.toString(decisionNotification.getInvestigatingCarNumber()), MessageDecoration.BOLD)
-                        .append(" for ")
-                        .append(decisionNotification.getReason())
+                        .append(String.format("#%d", decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
+                        .append(" - ")
+                        .append(decisionNotification.getReason(), MessageDecoration.BOLD)
                         .send(channel);
             }
             else {
                 new MessageBuilder()
                         .append(decisionNotification.getDecision())
                         .append(" - ")
-                        .append(decisionNotification.getReason(), MessageDecoration.BOLD)
-                        .append(" - ")
-                        .append(Integer.toString(decisionNotification.getInvestigatingCarNumber()), MessageDecoration.BOLD)
-                        .append(" - ")
+                        .append(decisionNotification.getReason())
+                        .append(". ")
+                        .append(String.format("#%d", decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
+                        .append(" : ")
                         .append(decisionNotification.getPenalty(), MessageDecoration.BOLD)
                         .send(channel);
             }

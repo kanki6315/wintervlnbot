@@ -8,8 +8,8 @@ public class DecisionNotification {
 
     public String decision;
     public String reason;
-    public int reportingCarNumber;
-    public int investigatingCarNumber;
+    public int otherCarNumber;
+    public int penalizedCarNumber;
     public String penalty;
 
     public DecisionNotification() {
@@ -31,20 +31,20 @@ public class DecisionNotification {
         this.reason = reason;
     }
 
-    public int getReportingCarNumber() {
-        return reportingCarNumber;
+    public int getOtherCarNumber() {
+        return otherCarNumber;
     }
 
-    public void setReportingCarNumber(int reportingCarNumber) {
-        this.reportingCarNumber = reportingCarNumber;
+    public void setOtherCarNumber(int otherCarNumber) {
+        this.otherCarNumber = otherCarNumber;
     }
 
-    public int getInvestigatingCarNumber() {
-        return investigatingCarNumber;
+    public int getPenalizedCarNumber() {
+        return penalizedCarNumber;
     }
 
-    public void setInvestigatingCarNumber(int investigatingCarNumber) {
-        this.investigatingCarNumber = investigatingCarNumber;
+    public void setPenalizedCarNumber(int penalizedCarNumber) {
+        this.penalizedCarNumber = penalizedCarNumber;
     }
 
     public String getPenalty() {
