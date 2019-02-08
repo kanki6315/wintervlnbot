@@ -13,7 +13,7 @@ import org.javacord.api.entity.activity.ActivityType;
 
 import com.reverendracing.wintervlnbot.service.executors.HelpExecutor;
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
-import com.reverendracing.wintervlnbot.service.executors.QualifyingManagementExecutor;
+import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
 
 public class BotService {
@@ -21,7 +21,7 @@ public class BotService {
     private final DiscordApi api;
 
     private final UserNicknameChangeListener userNicknameChangeListener;
-    private final QualifyingManagementExecutor qualifyingManagementExecutor;
+    private final RaceControlExecutor raceControlExecutor;
     private final InfoExecutor infoExecutor;
     private final QueryExecutor queryExecutor;
 
@@ -30,13 +30,13 @@ public class BotService {
     public BotService(
             DiscordApi api,
             UserNicknameChangeListener userNicknameChangeListener,
-            QualifyingManagementExecutor qualifyingManagementExecutor,
+            RaceControlExecutor raceControlExecutor,
             InfoExecutor infoExecutor,
             QueryExecutor queryExecutor) {
 
         this.api = api;
         this.userNicknameChangeListener = userNicknameChangeListener;
-        this.qualifyingManagementExecutor = qualifyingManagementExecutor;
+        this.raceControlExecutor = raceControlExecutor;
         this.infoExecutor = infoExecutor;
         this.queryExecutor = queryExecutor;
     }
@@ -47,7 +47,7 @@ public class BotService {
 
         handler = new JavacordHandler(api);
         handler.registerCommand(infoExecutor);
-        handler.registerCommand(qualifyingManagementExecutor);
+        handler.registerCommand(raceControlExecutor);
         handler.registerCommand(queryExecutor);
         handler.registerCommand(new HelpExecutor(handler));
 

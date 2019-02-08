@@ -13,10 +13,13 @@ import static com.reverendracing.wintervlnbot.util.MessageUtil.sendStackTraceToC
 
 import java.util.function.Function;
 
+import com.reverendracing.wintervlnbot.util.model.DecisionNotification;
+import com.reverendracing.wintervlnbot.util.model.ProtestNotification;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import io.reactivex.Completable;
 
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
@@ -31,22 +34,29 @@ import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
 import com.reverendracing.wintervlnbot.util.model.BlackFlagMessage;
 
-public class QualifyingManagementExecutor implements CommandExecutor {
+public class RaceControlExecutor implements CommandExecutor {
 
     private boolean qualiEnabled;
 
     private String qualifyingAnnouncementChannel;
+    private String protestAnnouncementChannel;
+
     private String adminChannel;
     private String restApiUrl;
 
+    private DiscordApi api;
     private HubConnection socket;
 
-    public QualifyingManagementExecutor(
+    public RaceControlExecutor(
+            final DiscordApi api,
             final String qualifyingAnnouncementChannel,
+            final String protestAnnouncementChannel,
             final String adminChannel,
             final String restApiUrl) {
 
+        this.api = api;
         this.qualifyingAnnouncementChannel = qualifyingAnnouncementChannel;
+        this.protestAnnouncementChannel = protestAnnouncementChannel;
         this.adminChannel = adminChannel;
         this.restApiUrl = restApiUrl;
 
@@ -57,7 +67,7 @@ public class QualifyingManagementExecutor implements CommandExecutor {
             usage = "!q [Car Number] [Optional - S for solo drivers]")
     public void onBlackFlagRequest(String[] args, Message message, Server server, ServerTextChannel channel) {
 
-        ServerTextChannel announcementChannel = getAnnouncementChannel(server);
+        ServerTextChannel announcementChannel = getQualifyingChannel(server);
         if(channel.getId() != announcementChannel.getId())
             return;
 
@@ -84,9 +94,9 @@ public class QualifyingManagementExecutor implements CommandExecutor {
         if(!hasAdminPermission(server, user))
             return;
 
-        enableQuali(server);
-        if(qualiEnabled) {
-            announceQualifyingState("Open!", server);
+        if(isConnected()) {
+            qualiEnabled = true;
+            makeAnnouncement("Qualifying", "Open!", getQualifyingChannel(server));
             notifyChecked(message);
         } else {
             notifyFailed(message);
@@ -99,13 +109,9 @@ public class QualifyingManagementExecutor implements CommandExecutor {
         if(!hasAdminPermission(server, user))
             return;
 
-        disableQuali(server);
-        if(!qualiEnabled) {
-            announceQualifyingState("Closed!", server);
-            notifyChecked(message);
-        } else {
-            notifyFailed(message);
-        }
+        qualiEnabled = false;
+        makeAnnouncement("Qualifying", "Closed!", getQualifyingChannel(server));
+        notifyChecked(message);
     }
 
     @Command(aliases = "!restartsocket", description = "Reset Socket", showInHelpPage = false)
@@ -115,19 +121,44 @@ public class QualifyingManagementExecutor implements CommandExecutor {
             return;
 
         if(restartSocket(server, message)) {
-            announceQualifyingState("Open!", server);
             notifyChecked(message);
         } else {
             notifyFailed(message);
         }
     }
 
-    private void announceQualifyingState(final String state, final Server server) {
+    @Command(aliases = "!startsocket", description = "Start Socket", showInHelpPage = false)
+    public void onStartSocket(Message message, Server server, User user) {
 
-        ServerTextChannel announcementChannel = getAnnouncementChannel(server);
+        if(!hasAdminPermission(server, user))
+            return;
+
+        if(startSocket(server)) {
+            makeAnnouncement("Session", "Open", getAnnouncementChannel(server));
+            notifyChecked(message);
+        } else {
+            notifyFailed(message);
+        }
+    }
+
+    @Command(aliases = "!stopsocket", description = "Start Socket", showInHelpPage = false)
+    public void onStopSocket(Message message, Server server, User user) {
+
+        if(!hasAdminPermission(server, user))
+            return;
+
+        if(startSocket(server)) {
+            makeAnnouncement("Session", "Closed", getAnnouncementChannel(server));
+            notifyChecked(message);
+        } else {
+            notifyFailed(message);
+        }
+    }
+
+    private void makeAnnouncement(final String session, final String state, final ServerTextChannel announcementChannel) {
 
         new MessageBuilder()
-                .append("Qualifying is now ")
+                .append(String.format("%s is now ", session))
                 .append(state, MessageDecoration.BOLD)
                 .append("!")
                 .send(announcementChannel);
@@ -166,11 +197,11 @@ public class QualifyingManagementExecutor implements CommandExecutor {
             }
         }
 
-        if(socket.getConnectionState().equals(HubConnectionState.DISCONNECTED)) {
+        if(!isConnected()) {
             boolean restartConnection = startSocket(server);
 
             if(!restartConnection) {
-                announceQualifyingState("Suspended!", server);
+                makeAnnouncement("Qualifying", "Suspended!", getQualifyingChannel(server));
                 notifyFailed(message);
                 qualiEnabled = false;
                 return;
@@ -178,28 +209,6 @@ public class QualifyingManagementExecutor implements CommandExecutor {
         }
         socket.send("AddBlackFlag", new BlackFlagMessage(number, args.length > 1));
         notifyChecked(message);
-    }
-
-    private void enableQuali(Server server) {
-
-        boolean startSocket = startSocket(server);
-
-        if(startSocket) {
-            LoggerFactory.getLogger(QualifyingManagementExecutor.class).info(
-                    String.format("KeepAlive %d", socket.getKeepAliveInterval()));
-            LoggerFactory.getLogger(QualifyingManagementExecutor.class).info(
-                    String.format("ServerTimeout %d", socket.getServerTimeout()));
-            qualiEnabled = true;
-        }
-    }
-
-    private void disableQuali(Server server) {
-
-        boolean stopSocket = handleSocketConnection(HubConnection::stop, server);
-
-        if(stopSocket) {
-            qualiEnabled = false;
-        }
     }
 
     private boolean restartSocket(Server server, Message message) {
@@ -222,10 +231,12 @@ public class QualifyingManagementExecutor implements CommandExecutor {
 
     private boolean startSocket(Server server) {
 
-        if(socket == null)
-            socket = HubConnectionBuilder
-                    .create(restApiUrl)
-                    .build();
+        if(socket == null) {
+            socket = buildConnectionAndMethods();
+        }
+        else if(isConnected()) {
+            return true;
+        }
 
         boolean startSocket = handleSocketConnection(HubConnection::start, server);
 
@@ -233,6 +244,10 @@ public class QualifyingManagementExecutor implements CommandExecutor {
             return false;
 
         socket.send("AddToGroup", "Bot");
+        LoggerFactory.getLogger(RaceControlExecutor.class).info(
+                String.format("KeepAlive %d", socket.getKeepAliveInterval()));
+        LoggerFactory.getLogger(RaceControlExecutor.class).info(
+                String.format("ServerTimeout %d", socket.getServerTimeout()));
         return true;
     }
 
@@ -252,7 +267,62 @@ public class QualifyingManagementExecutor implements CommandExecutor {
         return true;
     }
 
-    private ServerTextChannel getAnnouncementChannel(Server server) {
+    private HubConnection buildConnectionAndMethods() {
+
+        HubConnection connection = HubConnectionBuilder
+                .create(restApiUrl)
+                .build();
+        connection.on("AnnounceProtest", (protestNotification) -> {
+            ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
+            new MessageBuilder()
+                    .append("Incident under investigation. Cars ")
+                    .append(String.format("#%d",protestNotification.getProtestingCarNumber()), MessageDecoration.BOLD)
+                    .append(" & ")
+                    .append(String.format("#%d", protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
+                    .append(" - ")
+                    .append(protestNotification.getReason(), MessageDecoration.BOLD)
+                    .send(channel);
+        }, ProtestNotification.class);
+        connection.on("AnnounceDecision", (decisionNotification) -> {
+
+            ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
+            if(decisionNotification.getDecision().equals("No Further Action")) {
+                new MessageBuilder()
+                        .append("No Further Action. Cars ")
+                        .append(String.format("#%d", decisionNotification.getOtherCarNumber()), MessageDecoration.BOLD)
+                        .append(" & ")
+                        .append(String.format("#%d", decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
+                        .append(" - ")
+                        .append(decisionNotification.getReason(), MessageDecoration.BOLD)
+                        .send(channel);
+            }
+            else {
+                new MessageBuilder()
+                        .append(decisionNotification.getDecision())
+                        .append(" - ")
+                        .append(decisionNotification.getReason())
+                        .append(". ")
+                        .append(String.format("#%d", decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
+                        .append(" : ")
+                        .append(decisionNotification.getPenalty(), MessageDecoration.BOLD)
+                        .send(channel);
+            }
+        }, DecisionNotification.class);
+
+        return connection;
+    }
+
+    private boolean isConnected() {
+        if(socket == null)
+            return false;
+        return HubConnectionState.CONNECTED.equals(socket.getConnectionState());
+    }
+
+    private ServerTextChannel getQualifyingChannel(Server server) {
         return getChannelByName(qualifyingAnnouncementChannel, server);
+    }
+
+    private ServerTextChannel getAnnouncementChannel(Server server) {
+        return getChannelByName(protestAnnouncementChannel, server);
     }
 }

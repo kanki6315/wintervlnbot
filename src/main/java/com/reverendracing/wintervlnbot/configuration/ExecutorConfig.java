@@ -5,12 +5,13 @@
 
 package com.reverendracing.wintervlnbot.configuration;
 
+import org.javacord.api.DiscordApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
-import com.reverendracing.wintervlnbot.service.executors.QualifyingManagementExecutor;
+import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
 import com.reverendracing.wintervlnbot.service.rest.SheetsManager;
 
@@ -41,12 +42,19 @@ public class ExecutorConfig {
     @Value("${discord.info.invite_channel}")
     private String inviteChannelName;
 
+    @Value("${discord.protests.message_channel}")
+    private String protestChannelName;
+
+
 
     @Bean
-    public QualifyingManagementExecutor qualifyingManagementExecutor() {
+    public RaceControlExecutor qualifyingManagementExecutor(
+            DiscordApi api) {
 
-        return new QualifyingManagementExecutor(
+        return new RaceControlExecutor(
+                api,
                 qualifyingChannelMessageName,
+                protestChannelName,
                 adminChannel,
                 qualifyingRestEndpoint);
     }
