@@ -201,7 +201,7 @@ public class SheetsManager {
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         File file = new File("tokens");
-        logger.info(file.getAbsolutePath());
+        logger.info(file.getCanonicalPath());
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
