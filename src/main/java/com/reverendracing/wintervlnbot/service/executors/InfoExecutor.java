@@ -8,6 +8,7 @@ package com.reverendracing.wintervlnbot.service.executors;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URL;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +47,8 @@ public class InfoExecutor implements CommandExecutor {
     private final String adminChannelName;
 
     private final String inviteChannelName;
+
+    BufferedImage winterVlnLogo;
 
     public InfoExecutor(
             final String entryListUrl,
@@ -164,9 +167,10 @@ public class InfoExecutor implements CommandExecutor {
             Server server) {
 
         try {
-            File imageFile =
-                    new File(this.getClass().getClassLoader().getResource("winter-vln-logo.jpg").getFile());
-            BufferedImage winterVlnLogo = ImageIO.read(imageFile);
+            if(this.winterVlnLogo == null) {
+                URL imageUrl = new URL("https://artifactracing.com/assets/images/logos/vln-iracing-logo-winter_forum.jpg");
+                this.winterVlnLogo = ImageIO.read(imageUrl);
+            }
 
             new MessageBuilder().setEmbed(new EmbedBuilder()
                     .setTitle(title)

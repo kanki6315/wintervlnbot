@@ -13,9 +13,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EntryRepository extends JpaRepository<Entry, String> {
 
-    List<Entry> findByCarNumberLikeOrTeamNameContainsIgnoreCase(final String carNumber, final String teamName);
+    List<Entry> findByTeamNameContainsIgnoreCase(final String teamName);
+
+    List<Entry> findByCarNumberEquals(final String carNumber);
+
 
     default List<Entry> searchEntry(final String q) {
-        return findByCarNumberLikeOrTeamNameContainsIgnoreCase(q, q);
+        try {
+            int carNumber = Integer.parseInt(q);
+            return findByCarNumberEquals(q);
+        } catch (NumberFormatException ex) {
+            return findByTeamNameContainsIgnoreCase(q);
+        }
     }
 }
