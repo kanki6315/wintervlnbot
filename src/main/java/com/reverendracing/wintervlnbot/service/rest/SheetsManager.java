@@ -41,6 +41,7 @@ import static com.reverendracing.wintervlnbot.util.CsvInputs.THIRD_DRIVER_NAME;
 import static com.reverendracing.wintervlnbot.util.CsvInputs.THIRD_DRIVER_SR;
 import static com.reverendracing.wintervlnbot.util.CsvInputs.TIMESTAMP;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -199,10 +200,12 @@ public class SheetsManager {
         InputStream in = SheetsManager.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
+        File file = new File("tokens");
+        logger.info(file.getAbsolutePath());
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File("tokens")))
+                .setDataStoreFactory(new FileDataStoreFactory(file))
                 .setAccessType("offline")
                 .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
