@@ -10,6 +10,7 @@ import static com.reverendracing.wintervlnbot.util.MessageUtil.hasAdminPermissio
 import static com.reverendracing.wintervlnbot.util.MessageUtil.isRole;
 import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyChecked;
 import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyFailed;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyUnallowed;
 import static com.reverendracing.wintervlnbot.util.MessageUtil.sendStackTraceToChannel;
 import static com.reverendracing.wintervlnbot.util.QueryFormatter.printDrivers;
 import static com.reverendracing.wintervlnbot.util.QueryFormatter.printEntryDetails;
@@ -19,6 +20,7 @@ import java.util.List;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
@@ -48,11 +50,27 @@ public class QueryExecutor implements CommandExecutor {
         this.adminChannelName = adminChannelName;
     }
 
+    private boolean checkPermisionAndQuery(String[] args, Message message, Server server, User user, TextChannel channel) {
+        if(!(isRole(server, user, protectedRoleName) || hasAdminPermission(server, user)))
+            return false;
+
+        String query = String.join(" ", args);
+        if(StringUtils.isEmpty(query)) {
+            new MessageBuilder()
+                .append("Cannot perform an empty search - please enter a car number or team name")
+                .send(channel);
+            notifyUnallowed(message);
+            return false;
+        }
+        return true;
+    }
+
     @Command(aliases = "!team", description = "Get team details by name or number", usage = "!team [Team name or number]")
     public void onTeamQuery(String[] args, Message message, Server server, User user, TextChannel channel) {
 
-        if(!(isRole(server, user, protectedRoleName) || hasAdminPermission(server, user)))
+        if(!checkPermisionAndQuery(args, message, server, user, channel)) {
             return;
+        }
 
         String query = String.join(" ", args);
         try {
@@ -77,8 +95,9 @@ public class QueryExecutor implements CommandExecutor {
     @Command(aliases = "!driver", description = "Get Driver details by name or number", usage = "!driver [Team name or number]")
     public void onDriverQuery(String[] args, Message message, Server server, User user, TextChannel channel) {
 
-        if(!(isRole(server, user, protectedRoleName) || hasAdminPermission(server, user)))
+        if(!checkPermisionAndQuery(args, message, server, user, channel)) {
             return;
+        }
 
         String query = String.join(" ", args);
         try {

@@ -67,10 +67,17 @@ public class InfoExecutor implements CommandExecutor {
     }
 
     String sessionTimeString =
-              "Session Opens:               %s\n"
+        "Session Opens:               %s\n"
             + "Qualifying:                       %s\n"
             + "Formation Lap Begins:  %s\n"
             + "Race Start:                     ~%s";
+
+    String scheduleString =
+              "Round 1: 23rd November 2019 - 4 hours\n"
+            + "Round 2: 21st December 2019 - 4 hours\n"
+            + "Round 3: 25th January 2020 - 4 hours\n"
+            + "Round 4: 22nd February 2020 - 6 hours\n"
+            + "Round 5: 7th March 2020 - 4 hours";
 
     @Command(aliases = "!invite", description = "Generate an invite link to the server", usage = "!invite")
     public void onInviteRequest(Message message, TextChannel channel, Server server) {
@@ -87,6 +94,15 @@ public class InfoExecutor implements CommandExecutor {
                             .send(channel);
                     notifyChecked(message);
                 });
+    }
+
+    @Command(aliases = "!schedule", description = "Check the season schedule", usage = "!schedule")
+    public void onSchedule(String[] args, TextChannel channel) {
+
+        new MessageBuilder()
+            .append("Season Schedule\n", MessageDecoration.BOLD)
+            .append(scheduleString)
+            .send(channel);
     }
 
     @Command(aliases = "!session", description = "See session times converted to your local time", usage = "!session [Timezone code]")

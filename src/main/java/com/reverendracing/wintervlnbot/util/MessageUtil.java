@@ -28,6 +28,10 @@ public class MessageUtil {
         message.addReaction("👎");
     }
 
+    public static void notifyUnallowed(Message message) {
+        message.addReaction("❌");
+    }
+
     public static void sendStackTraceToChannel(
             String message,
             TextChannel channel,
