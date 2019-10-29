@@ -33,6 +33,16 @@ public class QueryFormatter {
         List<String> gt3Choice = new ArrayList<>();
         List<String> teamManager = new ArrayList<>();
 
+        if(entries.size() == 0) {
+            new MessageBuilder()
+                .append("Teams\n", MessageDecoration.BOLD)
+                .append("```")
+                .append("No matching entries found")
+                .append("```")
+                .send(channel);
+            return;
+        }
+
         for (Entry entry : entries) {
             teamNames.add(entry.getTeamName());
             carClass.add(entry.getCarClass());
@@ -65,6 +75,16 @@ public class QueryFormatter {
     }
 
     public static void printDrivers(List<Entry> entries, TextChannel channel) {
+
+        if(entries.size() == 0) {
+            new MessageBuilder()
+                .append("Drivers\n", MessageDecoration.BOLD)
+                .append("```")
+                .append("No matching entries found")
+                .append("```")
+                .send(channel);
+            return;
+        }
 
         for (Entry entry : entries) {
             List<String> driverNames = new ArrayList<>();
