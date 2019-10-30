@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Scope;
 import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.BotService;
 import com.reverendracing.wintervlnbot.service.UserNicknameChangeListener;
+import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
 import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
@@ -52,14 +53,16 @@ public class AppConfig {
             UserNicknameChangeListener userNicknameChangeListener,
             RaceControlExecutor raceControlExecutor,
             InfoExecutor infoExecutor,
-            QueryExecutor queryExecutor) {
+            QueryExecutor queryExecutor,
+            AdminExecutor adminExecutor) {
 
         return new BotService(
                 api,
                 userNicknameChangeListener,
                 raceControlExecutor,
                 infoExecutor,
-                queryExecutor);
+                queryExecutor,
+                adminExecutor);
     }
 
     @Bean

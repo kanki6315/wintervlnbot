@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
 import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
@@ -79,5 +80,10 @@ public class ExecutorConfig {
                 sheetsManager,
                 protectedRole,
                 adminChannel);
+    }
+
+    @Bean
+    public AdminExecutor adminExecutor() {
+        return new AdminExecutor(protectedRole);
     }
 }

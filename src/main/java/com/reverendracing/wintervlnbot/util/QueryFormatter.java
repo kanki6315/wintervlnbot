@@ -5,7 +5,9 @@
 
 package com.reverendracing.wintervlnbot.util;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -17,11 +19,31 @@ import io.bretty.console.table.Table;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
 import org.springframework.util.StringUtils;
 
 import com.reverendracing.wintervlnbot.data.Entry;
 
 public class QueryFormatter {
+
+    public static String getTableForUsers(Collection<User> searchUsers, Server server) {
+        List<String> id = new ArrayList<>();
+        List<String> status = new ArrayList<>();
+        List<String> dateJoined = new ArrayList<>();
+        for (User searchUser : searchUsers) {
+            id.add(Long.toString(searchUser.getId()));
+            status.add(searchUser.getStatus().getStatusString());
+            dateJoined.add(searchUser.getJoinedAtTimestamp(server).orElse(Instant.now()).toString());
+        }
+
+        Table.Builder builder = new Table.Builder(
+            "User Id", id.toArray(new String[0]), getStringFormatterWithWidth(id));
+        addStringColumnToTable(builder, "Status", status);
+        addStringColumnToTable(builder, "Join Date", dateJoined);
+
+        return builder.build().toString();
+    }
 
     public static void printEntryDetails(List<Entry> entries, TextChannel channel) {
 

@@ -11,6 +11,7 @@ import de.btobastian.sdcf4j.handler.JavacordHandler;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.activity.ActivityType;
 
+import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
 import com.reverendracing.wintervlnbot.service.executors.HelpExecutor;
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
 import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
@@ -24,6 +25,7 @@ public class BotService {
     private final RaceControlExecutor raceControlExecutor;
     private final InfoExecutor infoExecutor;
     private final QueryExecutor queryExecutor;
+    private final AdminExecutor adminExecutor;
 
     private CommandHandler handler;
 
@@ -32,13 +34,15 @@ public class BotService {
             UserNicknameChangeListener userNicknameChangeListener,
             RaceControlExecutor raceControlExecutor,
             InfoExecutor infoExecutor,
-            QueryExecutor queryExecutor) {
+            QueryExecutor queryExecutor,
+            AdminExecutor adminExecutor) {
 
         this.api = api;
         this.userNicknameChangeListener = userNicknameChangeListener;
         this.raceControlExecutor = raceControlExecutor;
         this.infoExecutor = infoExecutor;
         this.queryExecutor = queryExecutor;
+        this.adminExecutor = adminExecutor;
     }
 
     public Boolean startBot() {
@@ -49,6 +53,7 @@ public class BotService {
         handler.registerCommand(infoExecutor);
         handler.registerCommand(raceControlExecutor);
         handler.registerCommand(queryExecutor);
+        handler.registerCommand(adminExecutor);
         handler.registerCommand(new HelpExecutor(handler));
 
         api.addReconnectListener(event -> event.getApi().updateActivity(ActivityType.PLAYING, "!help to learn more!"));
