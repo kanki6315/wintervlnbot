@@ -35,12 +35,6 @@ public class AppConfig {
     @Value("${discord.api.token}")
     private String apiToken;
 
-    @Value("${discord.sheets.id}")
-    private String sheetId;
-
-    @Value("${discord.sheets.range}")
-    private String sheetRange;
-
     @Bean
     public DiscordApi api(){
 
