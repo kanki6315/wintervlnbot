@@ -26,7 +26,7 @@ import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
 import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
-import com.reverendracing.wintervlnbot.service.rest.SheetsManager;
+import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
 
 @Configuration
 @Import({ExecutorConfig.class, ListenerConfig.class})
@@ -66,13 +66,8 @@ public class AppConfig {
     }
 
     @Bean
-    @Scope("singleton")
-    public SheetsManager sheetsManager(
-            EntryRepository entryRepository) {
-        return new SheetsManager(
-                entryRepository,
-                sheetId,
-                sheetRange);
+    public RequestBuilder requestBuilder() {
+        return new RequestBuilder();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")

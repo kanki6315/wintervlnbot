@@ -12,8 +12,10 @@ import static com.reverendracing.wintervlnbot.util.QueryFormatter.getTableForUse
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.swing.text.html.Option;
 
@@ -30,12 +32,32 @@ import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
+import com.reverendracing.wintervlnbot.data.Driver;
+import com.reverendracing.wintervlnbot.data.DriverRepository;
+import com.reverendracing.wintervlnbot.data.Entry;
+import com.reverendracing.wintervlnbot.data.EntryRepository;
+import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
+
 public class AdminExecutor implements CommandExecutor {
 
+    private final RequestBuilder requestBuilder;
+
+    private final String leagueId;
     private final String roleName;
 
+    private final EntryRepository entryRepository;
+    private final DriverRepository driverRepository;
+
     public AdminExecutor(
+        final RequestBuilder requestBuilder,
+        final EntryRepository entryRepository,
+        final DriverRepository driverRepository,
+        final String leagueId,
         final String roleName) {
+        this.requestBuilder = requestBuilder;
+        this.entryRepository = entryRepository;
+        this.driverRepository = driverRepository;
+        this.leagueId = leagueId;
         this.roleName = roleName;
     }
 
@@ -95,5 +117,36 @@ public class AdminExecutor implements CommandExecutor {
         Role role = server.getRolesByName(roleName).get(0);
         member.addRole(role);
         notifyChecked(message);
+    }
+
+    @Command(aliases = "!refresh", description = "Refresh bot db from api", showInHelpPage = false)
+    public void onRefreshEntries(String[] args, Message message, Server server, User user, TextChannel channel) {
+
+        if(!hasAdminPermission(server, user))
+            return;
+
+        driverRepository.deleteAll();
+        entryRepository.deleteAll();
+
+        try {
+            List<Entry> entries = requestBuilder.getEntries(leagueId);
+            List<Driver> drivers = entries.stream().map(Entry::getDrivers)
+                .flatMap(Collection::stream).collect(Collectors.toList());
+            entries.stream().forEach(e -> e.setDrivers(Collections.emptyList()));
+            entryRepository.saveAll(entries);
+            drivers.forEach(d -> {
+                d.setEntry(entryRepository.findById(d.getEntryId()).get());
+            });
+            driverRepository.saveAll(drivers);
+            notifyChecked(message);
+        }
+        catch(Exception ex) {
+            notifyFailed(message);
+            new MessageBuilder()
+                .append("Error while refreshing: ")
+                .append(ex.getMessage(), MessageDecoration.BOLD)
+                .send(channel);
+            return;
+        }
     }
 }

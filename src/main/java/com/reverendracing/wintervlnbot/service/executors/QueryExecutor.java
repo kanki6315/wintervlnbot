@@ -28,24 +28,27 @@ import org.javacord.api.entity.message.MessageDecoration;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
+import com.reverendracing.wintervlnbot.data.DriverRepository;
 import com.reverendracing.wintervlnbot.data.Entry;
 import com.reverendracing.wintervlnbot.data.EntryRepository;
-import com.reverendracing.wintervlnbot.service.rest.SheetsManager;
 
 public class QueryExecutor implements CommandExecutor {
 
-    private final SheetsManager sheets;
+    private final EntryRepository entryRepository;
+    private final DriverRepository driverRepository;
 
     private final String protectedRoleName;
 
     private final String adminChannelName;
 
     public QueryExecutor(
-            final SheetsManager sheets,
+            final EntryRepository entryRepository,
+            final DriverRepository driverRepository,
             final String protectedRoleName,
             final String adminChannelName) {
 
-        this.sheets = sheets;
+        this.entryRepository = entryRepository;
+        this.driverRepository = driverRepository;
         this.protectedRoleName = protectedRoleName;
         this.adminChannelName = adminChannelName;
     }
@@ -74,8 +77,7 @@ public class QueryExecutor implements CommandExecutor {
 
         String query = String.join(" ", args);
         try {
-            EntryRepository repo = sheets.getEntryRepository();
-            List<Entry> search = repo.searchEntry(query);
+            List<Entry> search = entryRepository.searchEntry(query);
             printEntryDetails(search, message.getChannel());
             notifyChecked(message);
 
@@ -101,11 +103,9 @@ public class QueryExecutor implements CommandExecutor {
 
         String query = String.join(" ", args);
         try {
-            EntryRepository repo = sheets.getEntryRepository();
-            List<Entry> search = repo.searchEntry(query);
-            printDrivers(search, message.getChannel());
+            List<Entry> search = entryRepository.searchEntry(query);
+            printDrivers(search, driverRepository, message.getChannel());
             notifyChecked(message);
-
         } catch (Exception ex) {
             new MessageBuilder()
                     .append("Unable to perform query with ")

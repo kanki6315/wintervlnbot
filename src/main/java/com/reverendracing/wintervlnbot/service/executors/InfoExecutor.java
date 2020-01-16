@@ -139,11 +139,11 @@ public class InfoExecutor implements CommandExecutor {
 
     }
 
-    @Command(aliases = "!entrylist", description = "See Entry List & Drivers", usage = "!entrylist")
+    @Command(aliases = "!entrylist", description = "See Entry List & Driver", usage = "!entrylist")
     public void onEntryList(TextChannel channel, Server server)  {
 
         tryAndSendImageEmbedMessage(
-                "Entry List & Drivers",
+                "Entry List & Driver",
                 entryListUrl,
                 "Click the embedded link to be redirected to the entry list!",
                 channel,

@@ -23,6 +23,8 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.springframework.util.StringUtils;
 
+import com.reverendracing.wintervlnbot.data.Driver;
+import com.reverendracing.wintervlnbot.data.DriverRepository;
 import com.reverendracing.wintervlnbot.data.Entry;
 
 public class QueryFormatter {
@@ -51,8 +53,7 @@ public class QueryFormatter {
         List<String> carClass = new ArrayList<>();
         List<String> carNumber = new ArrayList<>();
         List<String> teamId = new ArrayList<>();
-        List<String> teamCountry = new ArrayList<>();
-        List<String> gt3Choice = new ArrayList<>();
+        List<String> carChoice = new ArrayList<>();
         List<String> teamManager = new ArrayList<>();
 
         if(entries.size() == 0) {
@@ -70,8 +71,7 @@ public class QueryFormatter {
             carClass.add(entry.getCarClass());
             carNumber.add(entry.getCarNumber());
             teamId.add(entry.getTeamId());
-            teamCountry.add(entry.getTeamCountry());
-            gt3Choice.add(getInputOrEmptyString(entry.getGt3CarChoice()));
+            carChoice.add(getInputOrEmptyString(entry.getCarName()));
             teamManager.add(entry.getTeamManagerName());
         }
 
@@ -82,8 +82,7 @@ public class QueryFormatter {
         addStringColumnToTable(builder, "Car Class", carClass);
         addNumberColumnToTable(builder, "Car Number", carNumber);
         addNumberColumnToTable(builder, "Team ID", teamId);
-        addStringColumnToTable(builder, "Country", teamCountry);
-        addStringColumnToTable(builder, "GT3 Car", gt3Choice);
+        addStringColumnToTable(builder, "Car Choice", carChoice);
         addStringColumnToTable(builder, "Team Manager", teamManager);
 
         Table table = builder.build();
@@ -96,11 +95,11 @@ public class QueryFormatter {
                 .send(channel);
     }
 
-    public static void printDrivers(List<Entry> entries, TextChannel channel) {
+    public static void printDrivers(List<Entry> entries, DriverRepository driverRepository, TextChannel channel) {
 
         if(entries.size() == 0) {
             new MessageBuilder()
-                .append("Drivers\n", MessageDecoration.BOLD)
+                .append("Driver\n", MessageDecoration.BOLD)
                 .append("```")
                 .append("No matching entries found")
                 .append("```")
@@ -111,32 +110,16 @@ public class QueryFormatter {
         for (Entry entry : entries) {
             List<String> driverNames = new ArrayList<>();
             List<String> iracingIds = new ArrayList<>();
-            List<String> countries = new ArrayList<>();
-            driverNames.add(entry.getFirstDriverName());
-            iracingIds.add(entry.getFirstDriverId());
-            countries.add(entry.getFirstDriverCountry());
-
-            if (!StringUtils.isEmpty(entry.getSecondDriverName())) {
-                driverNames.add(entry.getSecondDriverName());
-                iracingIds.add(getInputOrEmptyString(entry.getSecondDriverId()));
-                countries.add(getInputOrEmptyString(entry.getSecondDriverCountry()));
+            List<String> iratings = new ArrayList<>();
+            List<String> safetyRatings = new ArrayList<>();
+            for(Driver driver : driverRepository.findByEntryId(entry.getId())) {
+                driverNames.add(driver.getDriverName());
+                iracingIds.add(driver.getDriverId());
+                iratings.add(Integer.toString(driver.getIrating()));
+                safetyRatings.add(String
+                    .format("%s %.2f", driver.getLicenseLevel(), driver.getSafetyRating()));
             }
-            if (!StringUtils.isEmpty(entry.getThirdDriverName())) {
-                driverNames.add(getInputOrEmptyString(entry.getThirdDriverName()));
-                iracingIds.add(getInputOrEmptyString(entry.getThirdDriverId()));
-                countries.add(getInputOrEmptyString(entry.getThirdDriverCountry()));
-            }
-            if (!StringUtils.isEmpty(entry.getFourthDriverName())) {
-                driverNames.add(getInputOrEmptyString(entry.getFourthDriverName()));
-                iracingIds.add(getInputOrEmptyString(entry.getFourthDriverId()));
-                countries.add(getInputOrEmptyString(entry.getFourthDriverCountry()));
-            }
-            if (!StringUtils.isEmpty(entry.getFifthDriverName())) {
-                driverNames.add(getInputOrEmptyString(entry.getFifthDriverName()));
-                iracingIds.add(getInputOrEmptyString(entry.getFifthDriverId()));
-                countries.add(getInputOrEmptyString(entry.getFifthDriverCountry()));
-            }
-            printDriversForEntry(entry, driverNames, iracingIds, countries, channel);
+            printDriversForEntry(entry, driverNames, iracingIds, iratings, safetyRatings, channel);
         }
     }
 
@@ -144,7 +127,8 @@ public class QueryFormatter {
             Entry entry,
             List<String> driverNames,
             List<String> iracingIds,
-            List<String> countries,
+            List<String> iratings,
+            List<String> safetyRatings,
             TextChannel channel) {
 
         Table.Builder builder = new Table.Builder(
@@ -152,11 +136,12 @@ public class QueryFormatter {
                 driverNames.toArray(new String[0]),
                 getStringFormatterWithWidth(driverNames));
         addNumberColumnToTable(builder, "iRacing ID", iracingIds);
-        addStringColumnToTable(builder, "Country", countries);
+        addNumberColumnToTable(builder, "iRating", iratings);
+        addStringColumnToTable(builder, "SR", safetyRatings);
 
         Table table = builder.build();
         new MessageBuilder()
-                .append("Drivers: ", MessageDecoration.BOLD)
+                .append("Driver: ", MessageDecoration.BOLD)
                 .append(String.format("%s, %s, %s", entry.getTeamName(), entry.getCarClass(), entry.getCarNumber()))
                 .append("```")
                 .append(table.toString())

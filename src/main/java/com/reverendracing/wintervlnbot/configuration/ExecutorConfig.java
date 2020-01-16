@@ -6,15 +6,18 @@
 package com.reverendracing.wintervlnbot.configuration;
 
 import org.javacord.api.DiscordApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.reverendracing.wintervlnbot.data.DriverRepository;
+import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
 import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
-import com.reverendracing.wintervlnbot.service.rest.SheetsManager;
+import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
 
 @Configuration
 public class ExecutorConfig {
@@ -46,7 +49,13 @@ public class ExecutorConfig {
     @Value("${discord.protests.message_channel}")
     private String protestChannelName;
 
+    @Value("${discord.league_id}")
+    private String leagueId;
 
+    @Autowired
+    EntryRepository entryRepository;
+    @Autowired
+    DriverRepository driverRepository;
 
     @Bean
     public RaceControlExecutor qualifyingManagementExecutor(
@@ -73,17 +82,22 @@ public class ExecutorConfig {
     }
 
     @Bean
-    public QueryExecutor queryExecutor(
-            SheetsManager sheetsManager) {
+    public QueryExecutor queryExecutor() {
 
         return new QueryExecutor(
-                sheetsManager,
+                entryRepository,
+                driverRepository,
                 protectedRole,
                 adminChannel);
     }
 
     @Bean
-    public AdminExecutor adminExecutor() {
-        return new AdminExecutor(protectedRole);
+    public AdminExecutor adminExecutor(RequestBuilder requestBuilder) {
+        return new AdminExecutor(
+                requestBuilder,
+                entryRepository,
+                driverRepository,
+                protectedRole,
+                leagueId);
     }
 }
