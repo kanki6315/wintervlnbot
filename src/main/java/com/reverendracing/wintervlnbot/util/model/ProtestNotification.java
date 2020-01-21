@@ -6,8 +6,8 @@ package com.reverendracing.wintervlnbot.util.model;
 
 public class ProtestNotification {
 
-    private int protestingCarNumber;
-    private int offendingCarNumber;
+    private String protestingCarNumber;
+    private String offendingCarNumber;
     private int lap;
     private String sector;
     private String timeStamp;
@@ -17,19 +17,19 @@ public class ProtestNotification {
     public ProtestNotification() {
     }
 
-    public int getProtestingCarNumber() {
+    public String getProtestingCarNumber() {
         return protestingCarNumber;
     }
 
-    public void setProtestingCarNumber(int protestingCarNumber) {
+    public void setProtestingCarNumber(String protestingCarNumber) {
         this.protestingCarNumber = protestingCarNumber;
     }
 
-    public int getOffendingCarNumber() {
+    public String getOffendingCarNumber() {
         return offendingCarNumber;
     }
 
-    public void setOffendingCarNumber(int offendingCarNumber) {
+    public void setOffendingCarNumber(String offendingCarNumber) {
         this.offendingCarNumber = offendingCarNumber;
     }
 

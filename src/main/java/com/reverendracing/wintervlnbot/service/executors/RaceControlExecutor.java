@@ -267,6 +267,10 @@ public class RaceControlExecutor implements CommandExecutor {
         return true;
     }
 
+    private String getNumber(String str) {
+        return String.format("%s%s","RC".equals(str) ? "#" : "", str);
+    }
+
     private HubConnection buildConnectionAndMethods() {
 
         HubConnection connection = HubConnectionBuilder
@@ -276,9 +280,9 @@ public class RaceControlExecutor implements CommandExecutor {
             ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
             new MessageBuilder()
                     .append("Incident under investigation. Cars ")
-                    .append(String.format("#%d",protestNotification.getProtestingCarNumber()), MessageDecoration.BOLD)
+                    .append(getNumber(protestNotification.getProtestingCarNumber()), MessageDecoration.BOLD)
                     .append(" & ")
-                    .append(String.format("#%d", protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
+                    .append(getNumber(protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
                     .append(" - ")
                     .append(protestNotification.getReason(), MessageDecoration.BOLD)
                     .send(channel);
@@ -289,9 +293,9 @@ public class RaceControlExecutor implements CommandExecutor {
             if(decisionNotification.getDecision().equals("No Further Action")) {
                 new MessageBuilder()
                         .append("No Further Action. Cars ")
-                        .append(String.format("#%d", decisionNotification.getOtherCarNumber()), MessageDecoration.BOLD)
+                        .append(getNumber(decisionNotification.getOtherCarNumber()), MessageDecoration.BOLD)
                         .append(" & ")
-                        .append(String.format("#%d", decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
+                        .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
                         .append(" - ")
                         .append(decisionNotification.getReason(), MessageDecoration.BOLD)
                         .send(channel);
@@ -302,7 +306,7 @@ public class RaceControlExecutor implements CommandExecutor {
                         .append(" - ")
                         .append(decisionNotification.getReason())
                         .append(". ")
-                        .append(String.format("#%d", decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
+                        .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
                         .append(" : ")
                         .append(decisionNotification.getPenalty(), MessageDecoration.BOLD)
                         .send(channel);
