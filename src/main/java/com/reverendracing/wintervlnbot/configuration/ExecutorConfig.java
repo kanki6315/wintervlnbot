@@ -97,7 +97,7 @@ public class ExecutorConfig {
                 requestBuilder,
                 entryRepository,
                 driverRepository,
-                protectedRole,
-                leagueId);
+                leagueId,
+                protectedRole);
     }
 }
