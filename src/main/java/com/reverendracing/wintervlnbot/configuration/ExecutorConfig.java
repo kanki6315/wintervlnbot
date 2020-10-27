@@ -28,20 +28,14 @@ public class ExecutorConfig {
     @Value("${discord.qualifying.api_endpoint}")
     private String qualifyingRestEndpoint;
 
-    @Value("${discord.info.entry_list}")
-    private String entryListUrl;
-
-    @Value("${discord.info.change_form}")
-    private String changeFormUrl;
-
-    @Value("${discord.info.standings}")
-    private String standingsUrl;
-
     @Value("${discord.username_listener.role}")
     private String protectedRole;
 
     @Value("${discord.username_listener.message_channel}")
-    private String adminChannel;
+    private String adminChannelName;
+
+    @Value("${discord.admin.channel_id}")
+    private String adminChannelId;
 
     @Value("${discord.info.invite_channel}")
     private String inviteChannelName;
@@ -65,7 +59,7 @@ public class ExecutorConfig {
                 api,
                 qualifyingChannelMessageName,
                 protestChannelName,
-                adminChannel,
+            adminChannelName,
                 qualifyingRestEndpoint);
     }
 
@@ -73,11 +67,8 @@ public class ExecutorConfig {
     public InfoExecutor infoExecutor() {
 
         return new InfoExecutor(
-                entryListUrl,
-                changeFormUrl,
-                standingsUrl,
                 protectedRole,
-                adminChannel,
+                adminChannelName,
                 inviteChannelName);
     }
 
@@ -88,16 +79,18 @@ public class ExecutorConfig {
                 entryRepository,
                 driverRepository,
                 protectedRole,
-                adminChannel);
+                adminChannelName);
     }
 
     @Bean
-    public AdminExecutor adminExecutor(RequestBuilder requestBuilder) {
+    public AdminExecutor adminExecutor(DiscordApi api, RequestBuilder requestBuilder) {
         return new AdminExecutor(
                 requestBuilder,
                 entryRepository,
                 driverRepository,
+                api,
                 leagueId,
-                protectedRole);
+                protectedRole,
+                adminChannelId);
     }
 }

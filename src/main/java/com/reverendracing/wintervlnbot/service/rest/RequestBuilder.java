@@ -31,12 +31,23 @@ public class RequestBuilder {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    public void syncDiscord(String leagueId) {
+        try {
+            makeRequest(
+                String.format(
+                    "https://www.wintervln.com/api/discord/sync/league/%s",
+                    leagueId), false);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
     public List<Entry> getEntries(String leagueId) {
         try {
             String response = makeRequest(
                 String.format(
                     "https://www.wintervln.com/api/leagues/%s/entries?includeDrivers=true",
-                    "91c743dc-6905-4e9d-99a3-64142cb019e9"));
+                    leagueId), true);
 
             List<EntryDTO> dtos = mapper.readValue(response, new TypeReference<List<EntryDTO>>() {
             });
@@ -69,13 +80,19 @@ public class RequestBuilder {
         }
     }
 
-    private String makeRequest(String url) {
+    private String makeRequest(String url, boolean returnBody) {
         Request request = new Request.Builder()
             .url(url)
             .build();
 
         try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+            if(!response.isSuccessful()) {
+                throw new RuntimeException("Remote call was not successful");
+            }
+            if(returnBody)
+                return response.body().string();
+            else
+                return "";
         }
         catch(IOException ioException) {
             throw new RuntimeException("Unable to read response");

@@ -36,11 +36,7 @@ import static com.reverendracing.wintervlnbot.util.MessageUtil.*;
 
 public class InfoExecutor implements CommandExecutor {
 
-    private final String entryListUrl;
-
-    private final String changeRequestUrl;
-
-    private final String standingsUrl;
+    private final static String websiteUrl = "https://www.wintervln.com";
 
     private final String protectedRoleName;
 
@@ -51,16 +47,9 @@ public class InfoExecutor implements CommandExecutor {
     BufferedImage winterVlnLogo;
 
     public InfoExecutor(
-            final String entryListUrl,
-            final String changeRequestUrl,
-            final String standingsUrl,
             final String protectedRoleName,
             final String adminChannelName,
             final String inviteChannelName) {
-
-        this.entryListUrl = entryListUrl;
-        this.changeRequestUrl = changeRequestUrl;
-        this.standingsUrl = standingsUrl;
         this.protectedRoleName = protectedRoleName;
         this.adminChannelName = adminChannelName;
         this.inviteChannelName = inviteChannelName;
@@ -73,11 +62,10 @@ public class InfoExecutor implements CommandExecutor {
             + "Race Start:                     ~%s";
 
     String scheduleString =
-              "Round 1: 23rd November 2019 - 4 hours\n"
-            + "Round 2: 21st December 2019 - 4 hours\n"
-            + "Round 3: 25th January 2020 - 4 hours\n"
-            + "Round 4: 22nd February 2020 - 6 hours\n"
-            + "Round 5: 7th March 2020 - 4 hours";
+              "Round 1: 28th November 2020 - 4 hours\n"
+            + "Round 2: 19th December 2020 - 4 hours\n"
+            + "Round 3: 9th January 2021 - 4 hours\n"
+            + "Round 4: 13th February 2021 - 6 hours";
 
     @Command(aliases = "!invite", description = "Generate an invite link to the server", usage = "!invite")
     public void onInviteRequest(Message message, TextChannel channel, Server server) {
@@ -144,22 +132,8 @@ public class InfoExecutor implements CommandExecutor {
 
         tryAndSendImageEmbedMessage(
                 "Entry List & Driver",
-                entryListUrl,
+                websiteUrl + "/teams",
                 "Click the embedded link to be redirected to the entry list!",
-                channel,
-                server);
-    }
-
-    @Command(aliases = "!changeform", description = "Get Change Request Form. Restricted to drivers only", usage = "!changeform")
-    public void onChangeForm(TextChannel channel, User user, Server server)  {
-
-        if(!(isRole(server, user, protectedRoleName) || hasAdminPermission(server, user)))
-            return;
-
-        tryAndSendImageEmbedMessage(
-                "Change Request Form",
-                changeRequestUrl,
-                "Click the embedded link to be redirected to the change request form!",
                 channel,
                 server);
     }
@@ -169,7 +143,7 @@ public class InfoExecutor implements CommandExecutor {
 
         tryAndSendImageEmbedMessage(
                 "Championship Standings",
-                standingsUrl,
+                websiteUrl + "/standings",
                 "Click the embedded link to be redirected to the championship standings!",
                 channel,
                 server);

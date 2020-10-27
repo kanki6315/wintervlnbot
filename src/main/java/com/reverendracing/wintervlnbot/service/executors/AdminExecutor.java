@@ -4,10 +4,12 @@
  */
 package com.reverendracing.wintervlnbot.service.executors;
 
+import static com.reverendracing.wintervlnbot.util.MessageUtil.getChannelByName;
 import static com.reverendracing.wintervlnbot.util.MessageUtil.hasAdminPermission;
 import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyChecked;
 import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyFailed;
 import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyUnallowed;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.sendStackTraceToChannel;
 import static com.reverendracing.wintervlnbot.util.QueryFormatter.getTableForUsers;
 
 import java.util.ArrayList;
@@ -24,6 +26,8 @@ import de.btobastian.sdcf4j.CommandExecutor;
 import io.bretty.console.table.Table;
 
 import org.apache.commons.lang3.StringUtils;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
@@ -31,6 +35,9 @@ import org.javacord.api.entity.message.MessageDecoration;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import com.reverendracing.wintervlnbot.data.Driver;
 import com.reverendracing.wintervlnbot.data.DriverRepository;
@@ -44,30 +51,41 @@ public class AdminExecutor implements CommandExecutor {
 
     private final String leagueId;
     private final String roleName;
+    private final String adminChannelId;
 
     private final EntryRepository entryRepository;
     private final DriverRepository driverRepository;
+
+    private final DiscordApi api;
+
+    private final Logger logger;
 
     public AdminExecutor(
         final RequestBuilder requestBuilder,
         final EntryRepository entryRepository,
         final DriverRepository driverRepository,
+        final DiscordApi api,
         final String leagueId,
-        final String roleName) {
+        final String roleName,
+        final String adminChannelId) {
         this.requestBuilder = requestBuilder;
         this.entryRepository = entryRepository;
         this.driverRepository = driverRepository;
+        this.api = api;
         this.leagueId = leagueId;
         this.roleName = roleName;
+        this.adminChannelId = adminChannelId;
+
+        this.logger = LoggerFactory.getLogger(AdminExecutor.class);
     }
 
     @Command(aliases = "!addrole", description = "Add Role to User by Nickname or ID", showInHelpPage = false)
     public void onRoleAdd(String[] args, Message message, Server server, User user, TextChannel channel) {
 
-        if(!hasAdminPermission(server, user))
+        if (!hasAdminPermission(server, user))
             return;
 
-        if(args.length == 0) {
+        if (args.length == 0) {
             notifyUnallowed(message);
             new MessageBuilder()
                 .append("Unable to find user without input")
@@ -76,9 +94,9 @@ public class AdminExecutor implements CommandExecutor {
         }
 
         User member;
-        if(args.length == 1 && StringUtils.isNumeric(args[0])) {
+        if (args.length == 1 && StringUtils.isNumeric(args[0])) {
             Optional<User> searchUser = server.getMemberById(args[0]);
-            if(!searchUser.isPresent()) {
+            if (!searchUser.isPresent()) {
                 notifyFailed(message);
                 new MessageBuilder()
                     .append("Unable to find user with id: ")
@@ -90,7 +108,7 @@ public class AdminExecutor implements CommandExecutor {
         } else {
             String query = String.join(" ", args);
             Collection<User> searchUsers = server.getMembersByNicknameIgnoreCase(query);
-            if(searchUsers.size() == 0) {
+            if (searchUsers.size() == 0) {
                 notifyFailed(message);
                 new MessageBuilder()
                     .append("Unable to find user with nickname: ")
@@ -98,7 +116,7 @@ public class AdminExecutor implements CommandExecutor {
                     .send(channel);
                 return;
             }
-            if(searchUsers.size() > 1) {
+            if (searchUsers.size() > 1) {
                 notifyFailed(message);
                 String table = getTableForUsers(searchUsers, server);
                 new MessageBuilder()
@@ -120,9 +138,14 @@ public class AdminExecutor implements CommandExecutor {
     }
 
     @Command(aliases = "!refresh", description = "Refresh bot db from api", showInHelpPage = false)
-    public void onRefreshEntries(String[] args, Message message, Server server, User user, TextChannel channel) {
+    public void onRefreshEntries(
+        String[] args,
+        Message message,
+        Server server,
+        User user,
+        TextChannel channel) {
 
-        if(!hasAdminPermission(server, user))
+        if (!hasAdminPermission(server, user))
             return;
 
         driverRepository.deleteAll();
@@ -139,8 +162,7 @@ public class AdminExecutor implements CommandExecutor {
             });
             driverRepository.saveAll(drivers);
             notifyChecked(message);
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             notifyFailed(message);
             new MessageBuilder()
                 .append("Error while refreshing: ")
@@ -148,5 +170,25 @@ public class AdminExecutor implements CommandExecutor {
                 .send(channel);
             return;
         }
+    }
+
+    @Scheduled(fixedRate = 1800000, initialDelay = 30000)
+    public void syncDiscordRoles() {
+        try {
+            requestBuilder.syncDiscord(leagueId);
+        } catch (Exception ex) {
+            logger.error(ex.getMessage());
+            ServerTextChannel
+                channel = api.getServerTextChannelById(adminChannelId).get();
+
+            new MessageBuilder()
+                .append(String.format("Error while syncing discord roles: %s", ex.getMessage()))
+                .send(channel);
+            sendStackTraceToChannel(
+                "Error when performing discord sync",
+                channel,
+                ex);
+        }
+        logger.info("finished scheduled task");
     }
 }
