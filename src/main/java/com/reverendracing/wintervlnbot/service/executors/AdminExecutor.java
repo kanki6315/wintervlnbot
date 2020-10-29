@@ -195,6 +195,7 @@ public class AdminExecutor implements CommandExecutor {
             Role driverRole = server.getRolesByName(roleName).get(0);
 
             List<Class> classes = classRepository.findAll();
+            int counter = 0;
 
             for(Class rClass : classes) {
                 logger.info(String.format("Starting sync for %s", rClass.getName()));
@@ -240,6 +241,7 @@ public class AdminExecutor implements CommandExecutor {
                         }
                         if(rolesTBA.size() > 0) {
                             hasUpdates = true;
+                            counter++;
                             updater.addRolesToUser(user, rolesTBA);
                         }
                     }
@@ -255,12 +257,12 @@ public class AdminExecutor implements CommandExecutor {
                 }
                 logger.info("Finished syncing class " + rClass.getName());
             }
-            logger.info("Sync Successful!");
+            logger.info(String.format("Discord Sync successful. %d users were updated"));
             ServerTextChannel
                 channel = api.getServerTextChannelById(adminChannelId).get();
 
             new MessageBuilder()
-                .append("Discord Sync successful")
+                .append(String.format("Discord Sync successful. %d users were updated"))
                 .send(channel);
         } catch (Exception ex) {
             logger.error(ex.getMessage());
