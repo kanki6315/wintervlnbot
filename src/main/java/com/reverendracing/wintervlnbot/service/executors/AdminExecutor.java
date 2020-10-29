@@ -257,12 +257,12 @@ public class AdminExecutor implements CommandExecutor {
                 }
                 logger.info("Finished syncing class " + rClass.getName());
             }
-            logger.info(String.format("Discord Sync successful. %d users were updated"));
+            logger.info(String.format("Discord Sync successful. %d users were updated", counter));
             ServerTextChannel
                 channel = api.getServerTextChannelById(adminChannelId).get();
 
             new MessageBuilder()
-                .append(String.format("Discord Sync successful. %d users were updated"))
+                .append(String.format("Discord Sync successful. %d users were updated", counter))
                 .send(channel);
         } catch (Exception ex) {
             logger.error(ex.getMessage());
