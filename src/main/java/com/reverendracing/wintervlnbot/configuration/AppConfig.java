@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.BotService;
@@ -30,6 +31,7 @@ import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
 
 @Configuration
 @Import({ExecutorConfig.class, ListenerConfig.class})
+@EnableScheduling
 public class AppConfig {
 
     @Value("${discord.api.token}")
@@ -38,7 +40,10 @@ public class AppConfig {
     @Bean
     public DiscordApi api(){
 
-        return new DiscordApiBuilder().setToken(apiToken).login().join();
+        return new DiscordApiBuilder()
+            .setToken(apiToken)
+            .setAllIntents()
+            .login().join();
     }
 
     @Bean

@@ -15,8 +15,10 @@ import okhttp3.Response;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.reverendracing.wintervlnbot.data.Class;
 import com.reverendracing.wintervlnbot.data.Driver;
 import com.reverendracing.wintervlnbot.data.Entry;
+import com.reverendracing.wintervlnbot.util.model.ClassDTO;
 import com.reverendracing.wintervlnbot.util.model.DriverDTO;
 import com.reverendracing.wintervlnbot.util.model.EntryDTO;
 
@@ -31,23 +33,12 @@ public class RequestBuilder {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public void syncDiscord(String leagueId) {
-        try {
-            makeRequest(
-                String.format(
-                    "https://www.wintervln.com/api/discord/sync/league/%s",
-                    leagueId), false);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex.getMessage());
-        }
-    }
-
     public List<Entry> getEntries(String leagueId) {
         try {
             String response = makeRequest(
                 String.format(
                     "https://www.wintervln.com/api/leagues/%s/entries?includeDrivers=true",
-                    leagueId), true);
+                    leagueId));
 
             List<EntryDTO> dtos = mapper.readValue(response, new TypeReference<List<EntryDTO>>() {
             });
@@ -61,6 +52,9 @@ public class RequestBuilder {
                 entry.setTeamName(dto.getTeamName());
                 entry.setTeamManagerName(dto.getTeamManagerName());
                 entry.setCarNumber(dto.getCarNumber());
+                entry.setClassId(dto.getClassDto().getId());
+                entry.setdRoleId(dto.getdRoleId());
+                entry.setdTeamManagerId(dto.getCreatingUserId());
                 for(DriverDTO driverDTO : dto.getDrivers()) {
                     Driver driver = new Driver();
                     driver.setId(driverDTO.getId());
@@ -70,6 +64,7 @@ public class RequestBuilder {
                     driver.setIrating(driverDTO.getIrating());
                     driver.setDriverName(driverDTO.getDriverName());
                     driver.setDriverId(driverDTO.getDriverId());
+                    driver.setdUserId(driverDTO.getdUserId());
                     entry.addDriver(driver);
                 }
                 returnVal.add(entry);
@@ -80,7 +75,31 @@ public class RequestBuilder {
         }
     }
 
-    private String makeRequest(String url, boolean returnBody) {
+    public List<Class> getClasses(final String leagueId) {
+        try {
+            String response = makeRequest(
+                String.format(
+                    "https://www.wintervln.com/api/leagues/%s/classes",
+                    leagueId));
+
+            List<ClassDTO> dtos = mapper.readValue(response, new TypeReference<List<ClassDTO>>() {
+            });
+            List<Class> returnVal = new ArrayList<>();
+            for(ClassDTO dto : dtos) {
+                Class retClass = new Class();
+                retClass.setId(dto.getId());
+                retClass.setName(dto.getName());
+                retClass.setdCategoryId(dto.getdCategoryId());
+                retClass.setdRoleId(dto.getdRoleId());
+                returnVal.add(retClass);
+            }
+            return returnVal;
+        } catch(Exception ex) {
+            throw new RuntimeException("Unable to parse json response into entries");
+        }
+    }
+
+    private String makeRequest(String url) {
         Request request = new Request.Builder()
             .url(url)
             .build();
@@ -89,13 +108,12 @@ public class RequestBuilder {
             if(!response.isSuccessful()) {
                 throw new RuntimeException("Remote call was not successful");
             }
-            if(returnBody)
-                return response.body().string();
-            else
-                return "";
+            return response.body().string();
         }
         catch(IOException ioException) {
             throw new RuntimeException("Unable to read response");
         }
     }
+
+
 }

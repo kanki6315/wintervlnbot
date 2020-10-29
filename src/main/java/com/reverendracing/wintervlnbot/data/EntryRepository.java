@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EntryRepository extends JpaRepository<Entry, String> {
 
+    List<Entry> findByClassId(final String classId);
+
     List<Entry> findByTeamNameContainsIgnoreCase(final String teamName);
 
     List<Entry> findByCarNumberEquals(final String carNumber);

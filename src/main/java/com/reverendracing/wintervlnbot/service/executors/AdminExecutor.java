@@ -34,11 +34,14 @@ import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.server.ServerUpdater;
 import org.javacord.api.entity.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import com.reverendracing.wintervlnbot.data.Class;
+import com.reverendracing.wintervlnbot.data.ClassRepository;
 import com.reverendracing.wintervlnbot.data.Driver;
 import com.reverendracing.wintervlnbot.data.DriverRepository;
 import com.reverendracing.wintervlnbot.data.Entry;
@@ -52,9 +55,11 @@ public class AdminExecutor implements CommandExecutor {
     private final String leagueId;
     private final String roleName;
     private final String adminChannelId;
+    private final String serverId;
 
     private final EntryRepository entryRepository;
     private final DriverRepository driverRepository;
+    private final ClassRepository classRepository;
 
     private final DiscordApi api;
 
@@ -64,17 +69,21 @@ public class AdminExecutor implements CommandExecutor {
         final RequestBuilder requestBuilder,
         final EntryRepository entryRepository,
         final DriverRepository driverRepository,
+        final ClassRepository classRepository,
         final DiscordApi api,
         final String leagueId,
         final String roleName,
-        final String adminChannelId) {
+        final String adminChannelId,
+        final String serverId) {
         this.requestBuilder = requestBuilder;
         this.entryRepository = entryRepository;
         this.driverRepository = driverRepository;
+        this.classRepository = classRepository;
         this.api = api;
         this.leagueId = leagueId;
         this.roleName = roleName;
         this.adminChannelId = adminChannelId;
+        this.serverId = serverId;
 
         this.logger = LoggerFactory.getLogger(AdminExecutor.class);
     }
@@ -150,12 +159,18 @@ public class AdminExecutor implements CommandExecutor {
 
         driverRepository.deleteAll();
         entryRepository.deleteAll();
+        classRepository.deleteAll();
 
         try {
+            List<Class> classes = requestBuilder.getClasses(leagueId);
+            classRepository.saveAll(classes);
             List<Entry> entries = requestBuilder.getEntries(leagueId);
             List<Driver> drivers = entries.stream().map(Entry::getDrivers)
                 .flatMap(Collection::stream).collect(Collectors.toList());
             entries.stream().forEach(e -> e.setDrivers(Collections.emptyList()));
+            entries.forEach(e -> {
+                e.setrClass(classRepository.findById(e.getClassId()).get());
+            });
             entryRepository.saveAll(entries);
             drivers.forEach(d -> {
                 d.setEntry(entryRepository.findById(d.getEntryId()).get());
@@ -174,8 +189,83 @@ public class AdminExecutor implements CommandExecutor {
 
     @Scheduled(fixedRate = 1800000, initialDelay = 30000)
     public void syncDiscordRoles() {
+        logger.info("Starting sync");
         try {
-            requestBuilder.syncDiscord(leagueId);
+            Optional<Server> serverOpt = api.getServerById(serverId);
+            if(!serverOpt.isPresent()) {
+                throw new Exception("Not in server");
+            }
+            Server server = serverOpt.get();
+            Role driverRole = server.getRolesByName(roleName).get(0);
+
+            List<Class> classes = classRepository.findAll();
+
+            for(Class rClass : classes) {
+                logger.info(String.format("Starting sync for %s", rClass.getName()));
+                Role classRole = server.getRoleById(rClass.getdRoleId()).get();
+                List<Entry> entries = entryRepository.findByClassId(rClass.getId());
+                for(Entry entry : entries) {
+                    if(entry.getdRoleId() == null) {
+                        logger.info(String.format("Skipping sync for %s - %s", entry.getCarNumber(), entry.getTeamName()));
+                        continue;
+                    }
+                    logger.info(String.format("Starting sync for %s - %s", entry.getCarNumber(), entry.getTeamName()));
+                    ServerUpdater updater = new ServerUpdater(server);
+                    Role entryRole = server.getRoleById(entry.getdRoleId()).get();
+                    List<Driver> drivers = driverRepository.findByEntryId(entry.getId());
+                    List<Long> discordIds = drivers.stream().map(Driver::getdUserId).filter(d -> d != null).distinct().collect(
+                        Collectors.toList());
+                    boolean hasUpdates = false;
+
+                    if (StringUtils.isNotEmpty(entry.getdTeamManagerId())) {
+                        if(!discordIds.contains(Long.parseLong(entry.getdTeamManagerId()))) {
+                            discordIds.add(Long.parseLong(entry.getdTeamManagerId()));
+                        }
+                    }
+
+                    logger.info(String.format("%d users found to sync", discordIds.size()));
+                    for(long discordId : discordIds) {
+                        Optional<User> optUser = server.getMemberById(discordId);
+                        if(!optUser.isPresent()) {
+                            logger.info(String.format("User %d not in server", discordId));
+                            continue;
+                        }
+                        User user = optUser.get();
+                        List<Role> roles = user.getRoles(server);
+                        List<Role> rolesTBA = new ArrayList<>();
+                        if(!roles.contains(classRole)) {
+                            rolesTBA.add(classRole);
+                        }
+                        if(!roles.contains(entryRole)) {
+                            rolesTBA.add(entryRole);
+                        }
+                        if(!roles.contains(driverRole)) {
+                            rolesTBA.add(driverRole);
+                        }
+                        if(rolesTBA.size() > 0) {
+                            hasUpdates = true;
+                            updater.addRolesToUser(user, rolesTBA);
+                        }
+                    }
+
+                    if(hasUpdates) {
+                        logger.info("Queued updates, executing now");
+                        updater.update().join();
+                        logger.info("Completed updates and sync, sleeping for 5s");
+                        Thread.sleep(5000);
+                    } else {
+                        logger.info("No updates for entry, moving to next one");
+                    }
+                }
+                logger.info("Finished syncing class " + rClass.getName());
+            }
+            logger.info("Sync Successful!");
+            ServerTextChannel
+                channel = api.getServerTextChannelById(adminChannelId).get();
+
+            new MessageBuilder()
+                .append("Discord Sync successful")
+                .send(channel);
         } catch (Exception ex) {
             logger.error(ex.getMessage());
             ServerTextChannel

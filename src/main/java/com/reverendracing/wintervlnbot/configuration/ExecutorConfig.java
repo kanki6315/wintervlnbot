@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.reverendracing.wintervlnbot.data.ClassRepository;
 import com.reverendracing.wintervlnbot.data.DriverRepository;
 import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
@@ -46,10 +47,15 @@ public class ExecutorConfig {
     @Value("${discord.league_id}")
     private String leagueId;
 
+    @Value("${discord.server_id}")
+    private String serverId;
+
     @Autowired
     EntryRepository entryRepository;
     @Autowired
     DriverRepository driverRepository;
+    @Autowired
+    ClassRepository classRepository;
 
     @Bean
     public RaceControlExecutor qualifyingManagementExecutor(
@@ -88,9 +94,11 @@ public class ExecutorConfig {
                 requestBuilder,
                 entryRepository,
                 driverRepository,
+                classRepository,
                 api,
                 leagueId,
                 protectedRole,
-                adminChannelId);
+                adminChannelId,
+                serverId);
     }
 }

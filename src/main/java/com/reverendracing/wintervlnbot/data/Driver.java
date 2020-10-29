@@ -23,6 +23,7 @@ public class Driver {
     private int irating;
     private String licenseLevel;
     private double safetyRating;
+    private Long dUserId;
 
     @ManyToOne
     @JoinColumn(name = "entry_id")
@@ -95,5 +96,13 @@ public class Driver {
 
     public void setEntryId(final String entryId) {
         this.entryId = entryId;
+    }
+
+    public Long getdUserId() {
+        return dUserId;
+    }
+
+    public void setdUserId(final Long dUserId) {
+        this.dUserId = dUserId;
     }
 }

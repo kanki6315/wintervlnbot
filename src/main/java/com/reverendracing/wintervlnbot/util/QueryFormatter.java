@@ -54,7 +54,6 @@ public class QueryFormatter {
         List<String> carNumber = new ArrayList<>();
         List<String> teamId = new ArrayList<>();
         List<String> carChoice = new ArrayList<>();
-        List<String> teamManager = new ArrayList<>();
 
         if(entries.size() == 0) {
             new MessageBuilder()
@@ -72,7 +71,6 @@ public class QueryFormatter {
             carNumber.add(entry.getCarNumber());
             teamId.add(entry.getTeamId());
             carChoice.add(getInputOrEmptyString(entry.getCarName()));
-            teamManager.add(entry.getTeamManagerName());
         }
 
         Table.Builder builder = new Table.Builder(
@@ -83,7 +81,6 @@ public class QueryFormatter {
         addNumberColumnToTable(builder, "Car Number", carNumber);
         addNumberColumnToTable(builder, "Team ID", teamId);
         addStringColumnToTable(builder, "Car Choice", carChoice);
-        addStringColumnToTable(builder, "Team Manager", teamManager);
 
         Table table = builder.build();
 

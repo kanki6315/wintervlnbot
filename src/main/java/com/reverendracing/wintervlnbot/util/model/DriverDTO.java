@@ -11,6 +11,8 @@ public class DriverDTO {
     public String licenseLevel;
     public double safetyRating;
 
+    public Long dUserId;
+
     public String EntryId;
 
     public String Id;
@@ -69,5 +71,13 @@ public class DriverDTO {
 
     public void setId(final String id) {
         Id = id;
+    }
+
+    public Long getdUserId() {
+        return dUserId;
+    }
+
+    public void setdUserId(final Long dUserId) {
+        this.dUserId = dUserId;
     }
 }

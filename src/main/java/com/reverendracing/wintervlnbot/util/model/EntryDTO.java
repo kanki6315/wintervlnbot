@@ -15,12 +15,15 @@ public class EntryDTO {
     public String teamName;
     public String carNumber;
     public String RegistrationStatus;
+    public String creatingUserId;
 
     public String carName;
     public String teamManagerName;
     @JsonProperty("class")
     public ClassDTO classDto;
     public List<DriverDTO> drivers;
+
+    public Long dRoleId;
 
     public EntryDTO() {
     }
@@ -95,5 +98,21 @@ public class EntryDTO {
 
     public void setDrivers(final List<DriverDTO> drivers) {
         this.drivers = drivers;
+    }
+
+    public Long getdRoleId() {
+        return dRoleId;
+    }
+
+    public void setdRoleId(final Long dRoleId) {
+        this.dRoleId = dRoleId;
+    }
+
+    public String getCreatingUserId() {
+        return creatingUserId;
+    }
+
+    public void setCreatingUserId(final String creatingUserId) {
+        this.creatingUserId = creatingUserId;
     }
 }

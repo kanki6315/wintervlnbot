@@ -5,9 +5,12 @@
 
 package com.reverendracing.wintervlnbot.data;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -32,8 +35,19 @@ public class Entry {
 
     private String carName;
 
+    private String dTeamManagerId;
+
+    private Long dVoiceChannelId;
+    private Long dRoleId;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Driver> drivers;
+
+    @ManyToOne
+    @JoinColumn(name = "class_id")
+    private Class rClass;
+    @Column(name = "class_id", updatable = false, insertable = false)
+    private String classId;
 
     public Entry() {
     }
@@ -107,5 +121,49 @@ public class Entry {
             this.drivers = new ArrayList<>();
         }
         this.drivers.add(driver);
+    }
+
+    public long getdVoiceChannelId() {
+        return dVoiceChannelId;
+    }
+
+    public void setdVoiceChannelId(final long dVoiceChannelId) {
+        this.dVoiceChannelId = dVoiceChannelId;
+    }
+
+    public Long getdRoleId() {
+        return dRoleId;
+    }
+
+    public void setdRoleId(final Long dRoleId) {
+        this.dRoleId = dRoleId;
+    }
+
+    public void setdVoiceChannelId(final Long dVoiceChannelId) {
+        this.dVoiceChannelId = dVoiceChannelId;
+    }
+
+    public Class getrClass() {
+        return rClass;
+    }
+
+    public void setrClass(final Class rClass) {
+        this.rClass = rClass;
+    }
+
+    public String getClassId() {
+        return classId;
+    }
+
+    public void setClassId(final String classId) {
+        this.classId = classId;
+    }
+
+    public String getdTeamManagerId() {
+        return dTeamManagerId;
+    }
+
+    public void setdTeamManagerId(final String dTeamManagerId) {
+        this.dTeamManagerId = dTeamManagerId;
     }
 }
