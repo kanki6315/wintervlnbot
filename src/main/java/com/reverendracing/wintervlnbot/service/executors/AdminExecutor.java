@@ -164,18 +164,7 @@ public class AdminExecutor implements CommandExecutor {
         try {
             List<Class> classes = requestBuilder.getClasses(leagueId);
             classRepository.saveAll(classes);
-            List<Entry> entries = requestBuilder.getEntries(leagueId);
-            List<Driver> drivers = entries.stream().map(Entry::getDrivers)
-                .flatMap(Collection::stream).collect(Collectors.toList());
-            entries.stream().forEach(e -> e.setDrivers(Collections.emptyList()));
-            entries.forEach(e -> {
-                e.setrClass(classRepository.findById(e.getClassId()).get());
-            });
-            entryRepository.saveAll(entries);
-            drivers.forEach(d -> {
-                d.setEntry(entryRepository.findById(d.getEntryId()).get());
-            });
-            driverRepository.saveAll(drivers);
+            syncTeamsAndDrivers();
             notifyChecked(message);
         } catch (Exception ex) {
             notifyFailed(message);
@@ -195,6 +184,13 @@ public class AdminExecutor implements CommandExecutor {
             if(!serverOpt.isPresent()) {
                 throw new Exception("Not in server");
             }
+
+            logger.info("Refreshing teams/drivers");
+            driverRepository.deleteAll();
+            entryRepository.deleteAll();
+            syncTeamsAndDrivers();
+            logger.info("Refreshed teams + drivers");
+
             Server server = serverOpt.get();
             Role driverRole = server.getRolesByName(roleName).get(0);
 
@@ -280,5 +276,20 @@ public class AdminExecutor implements CommandExecutor {
                 ex);
         }
         logger.info("finished scheduled task");
+    }
+
+    private void syncTeamsAndDrivers() {
+        List<Entry> entries = requestBuilder.getEntries(leagueId);
+        List<Driver> drivers = entries.stream().map(Entry::getDrivers)
+            .flatMap(Collection::stream).collect(Collectors.toList());
+        entries.stream().forEach(e -> e.setDrivers(Collections.emptyList()));
+        entries.forEach(e -> {
+            e.setrClass(classRepository.findById(e.getClassId()).get());
+        });
+        entryRepository.saveAll(entries);
+        drivers.forEach(d -> {
+            d.setEntry(entryRepository.findById(d.getEntryId()).get());
+        });
+        driverRepository.saveAll(drivers);
     }
 }
