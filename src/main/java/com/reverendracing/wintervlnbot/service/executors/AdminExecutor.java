@@ -261,9 +261,11 @@ public class AdminExecutor implements CommandExecutor {
             ServerTextChannel
                 channel = api.getServerTextChannelById(adminChannelId).get();
 
-            new MessageBuilder()
-                .append(String.format("Discord Sync successful. %d users were updated", counter))
-                .send(channel);
+            if (counter > 0) {
+                new MessageBuilder()
+                    .append(String.format("Discord Sync successful. %d users were updated", counter))
+                    .send(channel);
+            }
         } catch (Exception ex) {
             logger.error(ex.getMessage());
             ServerTextChannel

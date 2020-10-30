@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+
+import javax.swing.text.html.Option;
 
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
@@ -92,7 +95,7 @@ public class QueryFormatter {
                 .send(channel);
     }
 
-    public static void printDrivers(List<Entry> entries, DriverRepository driverRepository, TextChannel channel) {
+    public static void printDrivers(Server server, List<Entry> entries, DriverRepository driverRepository, TextChannel channel) {
 
         if(entries.size() == 0) {
             new MessageBuilder()
@@ -109,14 +112,26 @@ public class QueryFormatter {
             List<String> iracingIds = new ArrayList<>();
             List<String> iratings = new ArrayList<>();
             List<String> safetyRatings = new ArrayList<>();
+            List<String> discordNames = new ArrayList<>();
             for(Driver driver : driverRepository.findByEntryId(entry.getId())) {
                 driverNames.add(driver.getDriverName());
                 iracingIds.add(driver.getDriverId());
                 iratings.add(Integer.toString(driver.getIrating()));
                 safetyRatings.add(String
                     .format("%s %.2f", driver.getLicenseLevel(), driver.getSafetyRating()));
+                if( driver.getdUserId() != null) {
+                    Optional<User> optUser = server.getMemberById(driver.getdUserId());
+                    if(optUser.isPresent()) {
+                        User user = optUser.get();
+                        discordNames.add(user.getDisplayName(server));
+                    } else {
+                        discordNames.add("");
+                    }
+                } else {
+                    discordNames.add("N/A");
+                }
             }
-            printDriversForEntry(entry, driverNames, iracingIds, iratings, safetyRatings, channel);
+            printDriversForEntry(entry, driverNames, iracingIds, iratings, safetyRatings, discordNames, channel);
         }
     }
 
@@ -126,6 +141,7 @@ public class QueryFormatter {
             List<String> iracingIds,
             List<String> iratings,
             List<String> safetyRatings,
+            List<String> discordNames,
             TextChannel channel) {
 
         Table.Builder builder = new Table.Builder(
@@ -135,6 +151,7 @@ public class QueryFormatter {
         addNumberColumnToTable(builder, "iRacing ID", iracingIds);
         addNumberColumnToTable(builder, "iRating", iratings);
         addStringColumnToTable(builder, "SR", safetyRatings);
+        addStringColumnToTable(builder, "Discord Name", discordNames);
 
         Table table = builder.build();
         new MessageBuilder()

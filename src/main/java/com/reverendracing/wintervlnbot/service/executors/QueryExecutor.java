@@ -104,7 +104,7 @@ public class QueryExecutor implements CommandExecutor {
         String query = String.join(" ", args);
         try {
             List<Entry> search = entryRepository.searchEntry(query);
-            printDrivers(search, driverRepository, message.getChannel());
+            printDrivers(server, search, driverRepository, message.getChannel());
             notifyChecked(message);
         } catch (Exception ex) {
             new MessageBuilder()
