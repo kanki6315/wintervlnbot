@@ -268,7 +268,7 @@ public class RaceControlExecutor implements CommandExecutor {
     }
 
     private String getNumber(String str) {
-        return String.format("%s%s","RC".equals(str) ? "#" : "", str);
+        return String.format("%s%s","RC".equals(str) ? "" : "#", str);
     }
 
     private HubConnection buildConnectionAndMethods() {
@@ -304,11 +304,11 @@ public class RaceControlExecutor implements CommandExecutor {
                 new MessageBuilder()
                         .append(decisionNotification.getDecision())
                         .append(" - ")
-                        .append(decisionNotification.getReason())
-                        .append(". ")
                         .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
                         .append(" : ")
                         .append(decisionNotification.getPenalty(), MessageDecoration.BOLD)
+                        .append(". ")
+                        .append(decisionNotification.getReason())
                         .send(channel);
             }
         }, DecisionNotification.class);

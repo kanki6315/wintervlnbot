@@ -209,6 +209,10 @@ public class AdminExecutor implements CommandExecutor {
                     logger.info(String.format("Starting sync for %s - %s", entry.getCarNumber(), entry.getTeamName()));
                     ServerUpdater updater = new ServerUpdater(server);
                     Role entryRole = server.getRoleById(entry.getdRoleId()).get();
+                    if (!entry.getTeamName().equalsIgnoreCase(entryRole.getName())) {
+                        logger.info(String.format("Updating role name for %s - %s", entry.getCarNumber(), entry.getTeamName()));
+                        entryRole.updateName(entry.getTeamName()).join();
+                    }
                     List<Driver> drivers = driverRepository.findByEntryId(entry.getId());
                     List<Long> discordIds = drivers.stream().map(Driver::getdUserId).filter(d -> d != null).distinct().collect(
                         Collectors.toList());
