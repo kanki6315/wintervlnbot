@@ -43,6 +43,9 @@ public class Entry {
     @OneToMany(fetch = FetchType.LAZY)
     private List<Driver> drivers;
 
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<EntryCrew> entryCrew;
+
     @ManyToOne
     @JoinColumn(name = "class_id")
     private Class rClass;
@@ -121,6 +124,21 @@ public class Entry {
             this.drivers = new ArrayList<>();
         }
         this.drivers.add(driver);
+    }
+
+    public List<EntryCrew> getEntryCrew() {
+        return entryCrew;
+    }
+
+    public void setEntryCrew(final List<EntryCrew> entryCrew) {
+        this.entryCrew = entryCrew;
+    }
+
+    public void addEntryCrew(final EntryCrew crewMember) {
+        if (this.entryCrew == null) {
+            this.entryCrew = new ArrayList<>();
+        }
+        this.entryCrew.add(crewMember);
     }
 
     public long getdVoiceChannelId() {

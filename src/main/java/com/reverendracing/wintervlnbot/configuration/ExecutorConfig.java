@@ -73,7 +73,6 @@ public class ExecutorConfig {
     public InfoExecutor infoExecutor() {
 
         return new InfoExecutor(
-                protectedRole,
                 adminChannelName,
                 inviteChannelName);
     }

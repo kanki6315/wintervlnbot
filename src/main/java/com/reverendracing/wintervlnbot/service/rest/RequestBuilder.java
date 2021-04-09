@@ -37,7 +37,7 @@ public class RequestBuilder {
         try {
             String response = makeRequest(
                 String.format(
-                    "https://www.wintervln.com/api/leagues/%s/entries?includeDrivers=true",
+                    "https://www.isowc.org/api/leagues/%s/entries?includeDrivers=true",
                     leagueId));
 
             List<EntryDTO> dtos = mapper.readValue(response, new TypeReference<List<EntryDTO>>() {
@@ -64,7 +64,6 @@ public class RequestBuilder {
                     driver.setIrating(driverDTO.getIrating());
                     driver.setDriverName(driverDTO.getDriverName());
                     driver.setDriverId(driverDTO.getDriverId());
-                    driver.setdUserId(driverDTO.getdUserId());
                     entry.addDriver(driver);
                 }
                 returnVal.add(entry);

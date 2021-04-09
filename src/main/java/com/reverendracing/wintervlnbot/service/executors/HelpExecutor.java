@@ -32,7 +32,7 @@ public class HelpExecutor implements CommandExecutor {
             }
             builder.append("\n");
             if (simpleCommand.getCommandAnnotation().requiresMention()) {
-                builder.append("@Winter-VLN Bot ");
+                builder.append("@ISOWC Bot ");
             }
             String usage = simpleCommand.getCommandAnnotation().usage();
             if (usage.isEmpty()) { // no usage provided, using the first alias

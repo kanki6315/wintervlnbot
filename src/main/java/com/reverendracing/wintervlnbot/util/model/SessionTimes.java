@@ -15,15 +15,19 @@ import java.time.format.DateTimeFormatter;
 public class SessionTimes {
 
     private String sessionStartTime;
-    private String qualifyingStartTime;
+    private String driversBriefingTime;
+    private String qualifyingEndTime;
+    private String raceSessionStartTime;
     private String formationLapTime;
     private String raceStartTime;
 
     public SessionTimes() {
-        this.sessionStartTime = "10:45";
-        this.qualifyingStartTime = "12:30";
-        this.formationLapTime = "13:45";
-        this.raceStartTime = "14:00";
+        this.sessionStartTime = "15:50";
+        this.driversBriefingTime = "17:00";
+        this.qualifyingEndTime = "17:30";
+        this.raceSessionStartTime = "17:45";
+        this.formationLapTime = "17:55";
+        this.raceStartTime = "18:00";
     }
 
     public void convertWithZoneId(ZoneId zoneId) {
@@ -36,11 +40,23 @@ public class SessionTimes {
                 .withZoneSameInstant(zoneId);
         sessionStartTime = formatter.format(sessionZDT);
 
-        LocalDateTime qualifyingLDT = LocalDateTime.of(LocalDate.now(), LocalTime.parse(qualifyingStartTime, formatter));
+        LocalDateTime driversBriefingLDT = LocalDateTime.of(LocalDate.now(), LocalTime.parse(driversBriefingTime, formatter));
+        ZonedDateTime driversBriefingZDT = driversBriefingLDT
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(zoneId);
+        driversBriefingTime = formatter.format(driversBriefingZDT);
+
+        LocalDateTime qualifyingLDT = LocalDateTime.of(LocalDate.now(), LocalTime.parse(qualifyingEndTime, formatter));
         ZonedDateTime qualifyingZDT = qualifyingLDT
                 .atZone(ZoneId.of("UTC"))
                 .withZoneSameInstant(zoneId);
-        qualifyingStartTime = formatter.format(qualifyingZDT);
+        qualifyingEndTime = formatter.format(qualifyingZDT);
+
+        LocalDateTime raceSessionLDT = LocalDateTime.of(LocalDate.now(), LocalTime.parse(raceSessionStartTime, formatter));
+        ZonedDateTime raceSessionZDT = raceSessionLDT
+            .atZone(ZoneId.of("UTC"))
+            .withZoneSameInstant(zoneId);
+        raceSessionStartTime = formatter.format(sessionZDT);
 
         LocalDateTime formationLDT = LocalDateTime.of(LocalDate.now(), LocalTime.parse(formationLapTime, formatter));
         ZonedDateTime formationZDT = formationLDT
@@ -59,8 +75,8 @@ public class SessionTimes {
         return sessionStartTime;
     }
 
-    public String getQualifyingStartTime() {
-        return qualifyingStartTime;
+    public String getQualifyingEndTime() {
+        return qualifyingEndTime;
     }
 
     public String getFormationLapTime() {
@@ -69,5 +85,13 @@ public class SessionTimes {
 
     public String getRaceStartTime() {
         return raceStartTime;
+    }
+
+    public String getDriversBriefingTime() {
+        return driversBriefingTime;
+    }
+
+    public String getRaceSessionStartTime() {
+        return raceSessionStartTime;
     }
 }

@@ -147,7 +147,7 @@ public class RaceControlExecutor implements CommandExecutor {
         if(!hasAdminPermission(server, user))
             return;
 
-        if(startSocket(server)) {
+        if(stopSocket(server, message)) {
             makeAnnouncement("Session", "Closed", getAnnouncementChannel(server));
             notifyChecked(message);
         } else {
@@ -209,6 +209,16 @@ public class RaceControlExecutor implements CommandExecutor {
         }
         socket.send("AddBlackFlag", new BlackFlagMessage(number, args.length > 1));
         notifyChecked(message);
+    }
+
+    private boolean stopSocket(Server server, Message message) {
+
+        boolean stopSocket = handleSocketConnection(HubConnection::stop, server);
+
+        if(!stopSocket) {
+            return false;
+        }
+        return true;
     }
 
     private boolean restartSocket(Server server, Message message) {
