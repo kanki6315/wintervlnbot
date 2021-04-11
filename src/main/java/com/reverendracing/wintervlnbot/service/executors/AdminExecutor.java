@@ -193,13 +193,8 @@ public class AdminExecutor implements CommandExecutor {
         return String.format("#%s - %s", entry.getCarNumber(), driver.getDriverName());
     }
 
-    //@Scheduled(fixedRate = 1800000, initialDelay = 30000)
-    @Command(aliases = "!sync", description = "Refresh bot db from api", showInHelpPage = false)
-    public void syncDiscordRoles(String[] args,
-        Message message1,
-        Server server1,
-        User user1,
-        TextChannel channel1) {
+    @Scheduled(fixedRate = 1800000, initialDelay = 30000)
+    public void syncDiscordRoles() {
         logger.info("Starting sync");
         try {
             Optional<Server> serverOpt = api.getServerById(serverId);
