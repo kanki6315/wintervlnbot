@@ -323,7 +323,17 @@ public class AdminExecutor implements CommandExecutor {
 
             if (newCounter > 0) {
                 new MessageBuilder()
-                    .append(String.format("Discord Sync successful. %d users were updated", newCounter))
+                    .append(String.format("%d users had roles added", newCounter))
+                    .send(channel);
+            }
+            if (removeCounter > 0) {
+                new MessageBuilder()
+                    .append(String.format("%d users had roles removed", removeCounter))
+                    .send(channel);
+            }
+            if (wipedCounter > 0) {
+                new MessageBuilder()
+                    .append(String.format("%d users had roles wiped", wipedCounter))
                     .send(channel);
             }
         } catch (Exception ex) {
