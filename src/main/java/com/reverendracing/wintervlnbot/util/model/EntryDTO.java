@@ -22,8 +22,10 @@ public class EntryDTO {
     @JsonProperty("class")
     public ClassDTO classDto;
     public List<DriverDTO> drivers;
+    public List<EntryCrewDTO> crew;
 
     public Long dRoleId;
+    public Long dVoiceChannelId;
 
     public EntryDTO() {
     }
@@ -114,5 +116,21 @@ public class EntryDTO {
 
     public void setCreatingUserId(final String creatingUserId) {
         this.creatingUserId = creatingUserId;
+    }
+
+    public List<EntryCrewDTO> getCrew() {
+        return crew;
+    }
+
+    public void setCrew(final List<EntryCrewDTO> crew) {
+        this.crew = crew;
+    }
+
+    public Long getdVoiceChannelId() {
+        return dVoiceChannelId;
+    }
+
+    public void setdVoiceChannelId(final Long dVoiceChannelId) {
+        this.dVoiceChannelId = dVoiceChannelId;
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.reverendracing.wintervlnbot.data.ClassRepository;
 import com.reverendracing.wintervlnbot.data.DriverRepository;
+import com.reverendracing.wintervlnbot.data.EntryCrewRepository;
 import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
 import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
@@ -56,6 +57,8 @@ public class ExecutorConfig {
     DriverRepository driverRepository;
     @Autowired
     ClassRepository classRepository;
+    @Autowired
+    EntryCrewRepository entryCrewRepository;
 
     @Bean
     public RaceControlExecutor qualifyingManagementExecutor(
@@ -94,6 +97,7 @@ public class ExecutorConfig {
                 entryRepository,
                 driverRepository,
                 classRepository,
+                entryCrewRepository,
                 api,
                 leagueId,
                 protectedRole,

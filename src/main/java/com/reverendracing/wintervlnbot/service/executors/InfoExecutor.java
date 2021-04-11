@@ -51,11 +51,11 @@ public class InfoExecutor implements CommandExecutor {
 
     String sessionTimeString =
               "Practice & Q Session Opens:     %s\n"
-            + "Drivers Briefing:               %s\n"
-            + "Qualifying Ends:                   %s\n"
-            + "Race Session Opens:                %s\n"
-            + "Formation Lap Begins:  %s\n"
-            + "Race Start:                     ~%s";
+            + "Drivers Briefing:                           %s\n"
+            + "Qualifying Ends:                           %s\n"
+            + "Race Session Opens:                   %s\n"
+            + "Formation Lap Begins:                 %s\n"
+            + "Race Start:                                    ~%s";
 
     String scheduleString =
               "Round 1: 8th May 2021 - Watkins Glen - 60L\n"
@@ -137,6 +137,17 @@ public class InfoExecutor implements CommandExecutor {
                 "Click the embedded link to be redirected to the entry list!",
                 channel,
                 server);
+    }
+
+    @Command(aliases = "!news", description = "See Entry List & Driver", usage = "!news")
+    public void onNews(TextChannel channel, Server server)  {
+
+        tryAndSendImageEmbedMessage(
+            "News",
+            "https://news.isowc.org",
+            "Click the embedded link to be redirected to the latest ISOWC news!",
+            channel,
+            server);
     }
 
     @Command(aliases = "!standings", description = "Get Full Standings", usage = "!standings")

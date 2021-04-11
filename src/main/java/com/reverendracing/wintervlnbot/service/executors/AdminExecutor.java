@@ -193,8 +193,13 @@ public class AdminExecutor implements CommandExecutor {
         return String.format("#%s - %s", entry.getCarNumber(), driver.getDriverName());
     }
 
-    @Scheduled(fixedRate = 1800000, initialDelay = 30000)
-    public void syncDiscordRoles() {
+    //@Scheduled(fixedRate = 1800000, initialDelay = 30000)
+    @Command(aliases = "!sync", description = "Refresh bot db from api", showInHelpPage = false)
+    public void syncDiscordRoles(String[] args,
+        Message message1,
+        Server server1,
+        User user1,
+        TextChannel channel1) {
         logger.info("Starting sync");
         try {
             Optional<Server> serverOpt = api.getServerById(serverId);
@@ -264,12 +269,15 @@ public class AdminExecutor implements CommandExecutor {
                         List<Role> roles = user.getRoles(server);
                         List<Role> rolesTBA = new ArrayList<>();
                         if(!roles.contains(classRole)) {
+                            logger.info("adding class role to: " + user.getDiscriminatedName());
                             rolesTBA.add(classRole);
                         }
                         if(!roles.contains(entryRole)) {
+                            logger.info("adding entry role to: " + user.getDiscriminatedName());
                             rolesTBA.add(entryRole);
                         }
                         if(!roles.contains(driverRole)) {
+                            logger.info("adding driver role to: " + user.getDiscriminatedName());
                             rolesTBA.add(driverRole);
                         }
                         if(rolesTBA.size() > 0) {
@@ -282,6 +290,7 @@ public class AdminExecutor implements CommandExecutor {
                         entryRole.getUsers().stream().filter(u -> !discordIds.contains(u.getIdAsString())).collect(Collectors.toList());
                     if(!hasUpdates && usersWithEntryRolesToBeRemoved.size() > 0) hasUpdates = true;
                     for(User user : usersWithEntryRolesToBeRemoved) {
+                        logger.info("removing entry role from: " + user.getDiscriminatedName());
                         removeCounter++;
                         updater.removeRoleFromUser(user, entryRole);
                     }
@@ -342,7 +351,9 @@ public class AdminExecutor implements CommandExecutor {
         List<Entry> entries = requestBuilder.getEntries(leagueId);
         List<Driver> drivers = entries.stream().map(Entry::getDrivers)
             .flatMap(Collection::stream).collect(Collectors.toList());
-        List<EntryCrew> entryCrew = entries.stream().map(Entry::getEntryCrew)
+        List<EntryCrew> entryCrew = entries.stream()
+            .filter(e -> e.getEntryCrew() != null)
+            .map(Entry::getEntryCrew)
             .flatMap(Collection::stream).collect(Collectors.toList());
         entries.stream().forEach(e -> e.setDrivers(Collections.emptyList()));
         entries.forEach(e -> {
