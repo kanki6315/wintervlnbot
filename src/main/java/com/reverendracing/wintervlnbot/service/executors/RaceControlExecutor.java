@@ -64,7 +64,7 @@ public class RaceControlExecutor implements CommandExecutor {
     }
 
     @Command(aliases = {"!q", "!quali"}, description = "Request a black flag clearance for your car. Only responds to request in the correct channel.",
-            usage = "!q [Car Number] [Optional - S for solo drivers]")
+            usage = "!q [Car Number] [Optional - S for solo drivers]", showInHelpPage = false)
     public void onBlackFlagRequest(String[] args, Message message, Server server, ServerTextChannel channel) {
 
         ServerTextChannel announcementChannel = getQualifyingChannel(server);
@@ -147,7 +147,7 @@ public class RaceControlExecutor implements CommandExecutor {
         if(!hasAdminPermission(server, user))
             return;
 
-        if(startSocket(server)) {
+        if(stopSocket(server, message)) {
             makeAnnouncement("Session", "Closed", getAnnouncementChannel(server));
             notifyChecked(message);
         } else {
@@ -209,6 +209,16 @@ public class RaceControlExecutor implements CommandExecutor {
         }
         socket.send("AddBlackFlag", new BlackFlagMessage(number, args.length > 1));
         notifyChecked(message);
+    }
+
+    private boolean stopSocket(Server server, Message message) {
+
+        boolean stopSocket = handleSocketConnection(HubConnection::stop, server);
+
+        if(!stopSocket) {
+            return false;
+        }
+        return true;
     }
 
     private boolean restartSocket(Server server, Message message) {

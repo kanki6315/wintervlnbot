@@ -112,26 +112,14 @@ public class QueryFormatter {
             List<String> iracingIds = new ArrayList<>();
             List<String> iratings = new ArrayList<>();
             List<String> safetyRatings = new ArrayList<>();
-            List<String> discordNames = new ArrayList<>();
             for(Driver driver : driverRepository.findByEntryId(entry.getId())) {
                 driverNames.add(driver.getDriverName());
                 iracingIds.add(driver.getDriverId());
                 iratings.add(Integer.toString(driver.getIrating()));
                 safetyRatings.add(String
                     .format("%s %.2f", driver.getLicenseLevel(), driver.getSafetyRating()));
-                if( driver.getdUserId() != null) {
-                    Optional<User> optUser = server.getMemberById(driver.getdUserId());
-                    if(optUser.isPresent()) {
-                        User user = optUser.get();
-                        discordNames.add(user.getDisplayName(server));
-                    } else {
-                        discordNames.add("");
-                    }
-                } else {
-                    discordNames.add("N/A");
-                }
             }
-            printDriversForEntry(entry, driverNames, iracingIds, iratings, safetyRatings, discordNames, channel);
+            printDriversForEntry(entry, driverNames, iracingIds, iratings, safetyRatings, channel);
         }
     }
 
@@ -141,7 +129,6 @@ public class QueryFormatter {
             List<String> iracingIds,
             List<String> iratings,
             List<String> safetyRatings,
-            List<String> discordNames,
             TextChannel channel) {
 
         Table.Builder builder = new Table.Builder(
@@ -151,12 +138,11 @@ public class QueryFormatter {
         addNumberColumnToTable(builder, "iRacing ID", iracingIds);
         addNumberColumnToTable(builder, "iRating", iratings);
         addStringColumnToTable(builder, "SR", safetyRatings);
-        addStringColumnToTable(builder, "Discord Name", discordNames);
 
         Table table = builder.build();
         new MessageBuilder()
                 .append("Driver: ", MessageDecoration.BOLD)
-                .append(String.format("%s, %s, %s", entry.getTeamName(), entry.getCarClass(), entry.getCarNumber()))
+                .append(String.format("%s, %s", StringUtils.isEmpty(entry.getTeamName()) ? "Privateer" : entry.getTeamName(), entry.getCarNumber()))
                 .append("```")
                 .append(table.toString())
                 .append("```")

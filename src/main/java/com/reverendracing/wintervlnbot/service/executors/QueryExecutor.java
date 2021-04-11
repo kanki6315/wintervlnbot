@@ -68,7 +68,7 @@ public class QueryExecutor implements CommandExecutor {
         return true;
     }
 
-    @Command(aliases = "!team", description = "Get team details by name or number", usage = "!team [Team name or number]")
+    /*@Command(aliases = "!team", description = "Get team details by name or number", usage = "!team [Team name or number]")
     public void onTeamQuery(String[] args, Message message, Server server, User user, TextChannel channel) {
 
         if(!checkPermisionAndQuery(args, message, server, user, channel)) {
@@ -92,7 +92,7 @@ public class QueryExecutor implements CommandExecutor {
                     getChannelByName(adminChannelName, server),
                     ex);
         }
-    }
+    }*/
 
     @Command(aliases = "!driver", description = "Get Driver details by name or number", usage = "!driver [Team name or number]")
     public void onDriverQuery(String[] args, Message message, Server server, User user, TextChannel channel) {

@@ -7,13 +7,11 @@ package com.reverendracing.wintervlnbot.service.executors;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.net.URL;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.concurrent.CompletableFuture;
 
 import javax.imageio.ImageIO;
 
@@ -26,7 +24,6 @@ import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.server.Server;
-import org.javacord.api.entity.server.invite.Invite;
 import org.javacord.api.entity.server.invite.InviteBuilder;
 import org.javacord.api.entity.user.User;
 
@@ -36,36 +33,38 @@ import static com.reverendracing.wintervlnbot.util.MessageUtil.*;
 
 public class InfoExecutor implements CommandExecutor {
 
-    private final static String websiteUrl = "https://www.wintervln.com";
+    private final static String websiteUrl = "https://www.isowc.org";
 
-    private final String protectedRoleName;
 
     private final String adminChannelName;
 
     private final String inviteChannelName;
 
-    BufferedImage winterVlnLogo;
+    BufferedImage seriesLogo;
 
     public InfoExecutor(
-            final String protectedRoleName,
             final String adminChannelName,
             final String inviteChannelName) {
-        this.protectedRoleName = protectedRoleName;
         this.adminChannelName = adminChannelName;
         this.inviteChannelName = inviteChannelName;
     }
 
     String sessionTimeString =
-        "Session Opens:               %s\n"
-            + "Qualifying:                       %s\n"
-            + "Formation Lap Begins:  %s\n"
-            + "Race Start:                     ~%s";
+              "Practice & Q Session Opens:     %s\n"
+            + "Drivers Briefing:                           %s\n"
+            + "Qualifying Ends:                           %s\n"
+            + "Race Session Opens:                   %s\n"
+            + "Formation Lap Begins:                 %s\n"
+            + "Race Start:                                    ~%s";
 
     String scheduleString =
-              "Round 1: 28th November 2020 - 4 hours\n"
-            + "Round 2: 19th December 2020 - 4 hours\n"
-            + "Round 3: 9th January 2021 - 4 hours\n"
-            + "Round 4: 13th February 2021 - 6 hours";
+              "Round 1: 8th May 2021 - Watkins Glen - 60L\n"
+            + "Round 2: 5th June 2021 - Sebring - 40L\n"
+            + "Round 3: 19th June 2021 - Auto Club - 150L\n"
+            + "Round 4: 26th June 2021 - Long Beach - 85L\n"
+            + "Round 5: 17th July 2021 - Road America - 50L\n"
+            + "24th/25th July 2021 - ISOWC 500 Qualifying\n"
+            + "Round 6: 31st July 2021 - ISOWC 500 - 200L\n";
 
     @Command(aliases = "!invite", description = "Generate an invite link to the server", usage = "!invite")
     public void onInviteRequest(Message message, TextChannel channel, Server server) {
@@ -120,7 +119,9 @@ public class InfoExecutor implements CommandExecutor {
                 .append(String.format(
                         sessionTimeString,
                         times.getSessionStartTime(),
-                        times.getQualifyingStartTime(),
+                        times.getDriversBriefingTime(),
+                        times.getQualifyingEndTime(),
+                        times.getRaceStartTime(),
                         times.getFormationLapTime(),
                         times.getRaceStartTime()))
                 .send(channel);
@@ -132,10 +133,21 @@ public class InfoExecutor implements CommandExecutor {
 
         tryAndSendImageEmbedMessage(
                 "Entry List & Driver",
-                websiteUrl + "/teams",
+                websiteUrl + "/entries",
                 "Click the embedded link to be redirected to the entry list!",
                 channel,
                 server);
+    }
+
+    @Command(aliases = "!news", description = "See Entry List & Driver", usage = "!news")
+    public void onNews(TextChannel channel, Server server)  {
+
+        tryAndSendImageEmbedMessage(
+            "News",
+            "https://news.isowc.org",
+            "Click the embedded link to be redirected to the latest ISOWC news!",
+            channel,
+            server);
     }
 
     @Command(aliases = "!standings", description = "Get Full Standings", usage = "!standings")
@@ -157,24 +169,24 @@ public class InfoExecutor implements CommandExecutor {
             Server server) {
 
         try {
-            if(this.winterVlnLogo == null) {
-                URL imageUrl = new URL("https://artifactracing.com/assets/images/logos/vln-iracing-logo-winter_forum.jpg");
-                this.winterVlnLogo = ImageIO.read(imageUrl);
+            if(this.seriesLogo == null) {
+                URL imageUrl = new URL("https://racespot.media/assets/thumbnails/ISOWC1.png");
+                this.seriesLogo = ImageIO.read(imageUrl);
             }
 
             new MessageBuilder().setEmbed(new EmbedBuilder()
                     .setTitle(title)
                     .setUrl(url)
                     .setDescription(description)
-                    .setColor(Color.BLUE)
-                    .setImage(winterVlnLogo))
+                    .setColor(Color.RED)
+                    .setImage(seriesLogo))
                     .send(messageChannel);
         } catch (Exception ex) {
             new MessageBuilder().setEmbed(new EmbedBuilder()
                     .setTitle(title)
                     .setUrl(url)
                     .setDescription(description)
-                    .setColor(Color.BLUE))
+                    .setColor(Color.RED))
                     .send(messageChannel);
 
             sendStackTraceToChannel("Error parsing image for embed",
