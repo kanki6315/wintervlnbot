@@ -360,7 +360,10 @@ public class AdminExecutor implements CommandExecutor {
             .filter(e -> e.getEntryCrew() != null)
             .map(Entry::getEntryCrew)
             .flatMap(Collection::stream).collect(Collectors.toList());
-        entries.stream().forEach(e -> e.setDrivers(Collections.emptyList()));
+        entries.forEach(e -> {
+            e.setDrivers(Collections.emptyList());
+            e.setEntryCrew(Collections.emptyList());
+        });
         entries.forEach(e -> {
             e.setrClass(classRepository.findById(e.getClassId()).get());
         });
