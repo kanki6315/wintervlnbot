@@ -23,7 +23,7 @@ public class SessionTimes {
 
     public SessionTimes() {
         this.sessionStartTime = "15:50";
-        this.driversBriefingTime = "17:00";
+        this.driversBriefingTime = "16:30";
         this.qualifyingEndTime = "17:30";
         this.raceSessionStartTime = "17:45";
         this.formationLapTime = "17:55";
