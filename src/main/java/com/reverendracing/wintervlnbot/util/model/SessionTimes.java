@@ -22,7 +22,7 @@ public class SessionTimes {
     private String raceStartTime;
 
     public SessionTimes() {
-        this.sessionStartTime = "15:50";
+        this.sessionStartTime = "15:30";
         this.driversBriefingTime = "16:30";
         this.qualifyingEndTime = "17:30";
         this.raceSessionStartTime = "17:45";

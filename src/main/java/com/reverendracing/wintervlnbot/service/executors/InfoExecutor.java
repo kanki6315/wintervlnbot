@@ -121,7 +121,7 @@ public class InfoExecutor implements CommandExecutor {
                         times.getSessionStartTime(),
                         times.getDriversBriefingTime(),
                         times.getQualifyingEndTime(),
-                        times.getRaceStartTime(),
+                        times.getRaceSessionStartTime(),
                         times.getFormationLapTime(),
                         times.getRaceStartTime()))
                 .send(channel);
