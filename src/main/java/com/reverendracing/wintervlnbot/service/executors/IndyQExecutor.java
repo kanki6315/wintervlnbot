@@ -203,11 +203,17 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append("Qualifying Run Order")
                     .setEmbed(constructQueueEmbed(requests))
-                    .send(postChannel)
-                    .thenAcceptAsync(sentMessage -> {
-                        queueMessageId = sentMessage.getId();
-                    });
+                    .send(postChannel);
         }
+    }
+
+    @Command(aliases = "!setqueuemessage", description = "Enable qualifying for all users", showInHelpPage = false)
+    public void onSetQueueMessage(String[] args, Message message, Server server, User user, TextChannel channel) {
+
+        if(!hasAdminPermission(server, user))
+            return;
+        this.queueMessageId = Long.parseLong(args[0]);
+        notifyChecked(message);
     }
 
     @Command(aliases = "!enablequeue", description = "Enable qualifying for all users", showInHelpPage = false)
