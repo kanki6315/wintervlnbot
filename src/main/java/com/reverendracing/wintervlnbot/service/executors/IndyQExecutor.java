@@ -203,7 +203,10 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append("Qualifying Run Order")
                     .setEmbed(constructQueueEmbed(requests))
-                    .send(postChannel);
+                    .send(postChannel)
+                    .thenAcceptAsync(sentMessage -> {
+                        queueMessageId = sentMessage.getId();
+                    });
         }
     }
 
