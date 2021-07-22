@@ -186,8 +186,8 @@ public class IndyQExecutor implements CommandExecutor {
         QueueRequest nextDriver = requests.get(1);
         queueRepository.delete(toBeDeleted);
         new MessageBuilder()
-                .append(String.format("%s is next on deck for qualifying. " +
-                        "Please wait until Race Control releases you to leave your pit box.", nextDriver.getUserMentionTag()))
+                .append(String.format("#%s %s is next on deck for qualifying. " +
+                        "Please wait until Race Control releases you to leave your pit box.", nextDriver.getCarNumber(), nextDriver.getUserMentionTag()))
                 .send(announcementChannel);
         updateQueueEmbed(server);
         notifyChecked(message);
