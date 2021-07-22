@@ -56,7 +56,7 @@ public class SessionTimes {
         ZonedDateTime raceSessionZDT = raceSessionLDT
             .atZone(ZoneId.of("UTC"))
             .withZoneSameInstant(zoneId);
-        raceSessionStartTime = formatter.format(sessionZDT);
+        raceSessionStartTime = formatter.format(raceSessionZDT);
 
         LocalDateTime formationLDT = LocalDateTime.of(LocalDate.now(), LocalTime.parse(formationLapTime, formatter));
         ZonedDateTime formationZDT = formationLDT

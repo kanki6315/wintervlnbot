@@ -5,17 +5,12 @@
 
 package com.reverendracing.wintervlnbot.service;
 
+import com.reverendracing.wintervlnbot.service.executors.*;
 import de.btobastian.sdcf4j.CommandHandler;
 import de.btobastian.sdcf4j.handler.JavacordHandler;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.activity.ActivityType;
-
-import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
-import com.reverendracing.wintervlnbot.service.executors.HelpExecutor;
-import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
-import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
-import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
 
 public class BotService {
 
@@ -26,6 +21,7 @@ public class BotService {
     private final InfoExecutor infoExecutor;
     private final QueryExecutor queryExecutor;
     private final AdminExecutor adminExecutor;
+    private final IndyQExecutor indyQExecutor;
 
     private CommandHandler handler;
 
@@ -35,7 +31,8 @@ public class BotService {
             RaceControlExecutor raceControlExecutor,
             InfoExecutor infoExecutor,
             QueryExecutor queryExecutor,
-            AdminExecutor adminExecutor) {
+            AdminExecutor adminExecutor,
+            IndyQExecutor indyQExecutor) {
 
         this.api = api;
         this.userNicknameChangeListener = userNicknameChangeListener;
@@ -43,6 +40,7 @@ public class BotService {
         this.infoExecutor = infoExecutor;
         this.queryExecutor = queryExecutor;
         this.adminExecutor = adminExecutor;
+        this.indyQExecutor = indyQExecutor;
     }
 
     public Boolean startBot() {
@@ -54,6 +52,7 @@ public class BotService {
         handler.registerCommand(raceControlExecutor);
         handler.registerCommand(queryExecutor);
         handler.registerCommand(adminExecutor);
+        handler.registerCommand(indyQExecutor);
         handler.registerCommand(new HelpExecutor(handler));
 
         api.addReconnectListener(event -> event.getApi().updateActivity(ActivityType.PLAYING, "!help to learn more!"));

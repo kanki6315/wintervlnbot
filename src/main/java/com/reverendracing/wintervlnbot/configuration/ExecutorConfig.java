@@ -5,24 +5,24 @@
 
 package com.reverendracing.wintervlnbot.configuration;
 
+import com.reverendracing.wintervlnbot.data.*;
+import com.reverendracing.wintervlnbot.service.executors.*;
 import org.javacord.api.DiscordApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.reverendracing.wintervlnbot.data.ClassRepository;
-import com.reverendracing.wintervlnbot.data.DriverRepository;
-import com.reverendracing.wintervlnbot.data.EntryCrewRepository;
-import com.reverendracing.wintervlnbot.data.EntryRepository;
-import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
-import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
-import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
-import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
 import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
 
 @Configuration
 public class ExecutorConfig {
+
+    @Value("${indyqualifying.queue_request_channel}")
+    private String indyQualifyingRequestChannel;
+
+    @Value("${indyqualifying.queue_post_channel}")
+    private String indyQualifyingPostChannel;
 
     @Value("${discord.qualifying.message_channel}")
     private String qualifyingChannelMessageName;
@@ -59,6 +59,18 @@ public class ExecutorConfig {
     ClassRepository classRepository;
     @Autowired
     EntryCrewRepository entryCrewRepository;
+    @Autowired
+    QueueRequestRepository queueRequestRepository;
+
+    @Bean
+    public IndyQExecutor indyQExecutor() {
+        return new IndyQExecutor(
+                queueRequestRepository,
+                driverRepository,
+                indyQualifyingPostChannel,
+                indyQualifyingRequestChannel,
+                adminChannelName);
+    }
 
     @Bean
     public RaceControlExecutor qualifyingManagementExecutor(

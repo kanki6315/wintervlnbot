@@ -10,6 +10,7 @@ import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 
+import com.reverendracing.wintervlnbot.service.executors.*;
 import org.h2.tools.Server;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -23,10 +24,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.BotService;
 import com.reverendracing.wintervlnbot.service.UserNicknameChangeListener;
-import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
-import com.reverendracing.wintervlnbot.service.executors.InfoExecutor;
-import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
-import com.reverendracing.wintervlnbot.service.executors.QueryExecutor;
 import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
 
 @Configuration
@@ -53,7 +50,8 @@ public class AppConfig {
             RaceControlExecutor raceControlExecutor,
             InfoExecutor infoExecutor,
             QueryExecutor queryExecutor,
-            AdminExecutor adminExecutor) {
+            AdminExecutor adminExecutor,
+            IndyQExecutor indyQExecutor) {
 
         return new BotService(
                 api,
@@ -61,7 +59,8 @@ public class AppConfig {
                 raceControlExecutor,
                 infoExecutor,
                 queryExecutor,
-                adminExecutor);
+                adminExecutor,
+                indyQExecutor);
     }
 
     @Bean

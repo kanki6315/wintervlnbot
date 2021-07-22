@@ -13,4 +13,5 @@ import org.springframework.stereotype.Repository;
 public interface DriverRepository extends JpaRepository<Driver, String> {
 
     List<Driver> findByEntryId(final String entryId);
+    List<Driver> findByEntry_CarNumber(final String carNumber);
 }
