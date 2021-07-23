@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Optional;
 
 import static com.reverendracing.wintervlnbot.util.MessageUtil.*;
 
@@ -60,6 +61,7 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append("Queue is not open right now.")
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
 
@@ -67,12 +69,14 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append("Please only provide your car number")
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
         if(args.length == 0) {
             new MessageBuilder()
                     .append("Please provide your car number")
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
         String numberString = args[0].replace("#", "");
@@ -84,6 +88,7 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append(String.format("User is not permitted to queue #%s", numberString))
                     .send(announcementChannel);
+            notifyUnallowed(message);
             return;
         }
 
@@ -92,6 +97,7 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append(String.format("Car %s is not in queue", numberString))
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
         queueRepository.deleteAll(requests);
@@ -109,6 +115,7 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append("Queue is not open right now.")
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
 
@@ -116,12 +123,14 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append("Please only provide your car number")
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
         if(args.length == 0) {
             new MessageBuilder()
                     .append("Please provide your car number")
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
         String numberString = args[0].replace("#", "");
@@ -131,6 +140,7 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append(String.format("Car number #%s is not registered", numberString))
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
 
@@ -141,6 +151,7 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append(String.format("User is not permitted to queue #%s", numberString))
                     .send(announcementChannel);
+            notifyUnallowed(message);
             return;
         }
 
@@ -149,6 +160,7 @@ public class IndyQExecutor implements CommandExecutor {
             new MessageBuilder()
                     .append(String.format("Car %s is already in queue", numberString))
                     .send(announcementChannel);
+            notifyFailed(message);
             return;
         }
 
@@ -226,6 +238,60 @@ public class IndyQExecutor implements CommandExecutor {
         makeAnnouncement("Qualifying Queue", "Open!", getQueueChannel(server));
         notifyChecked(message);
     }
+
+    @Command(aliases = "!adddriver", description = "Add a driver to queue as an admin", showInHelpPage = false)
+    public void onAdminAddToQueue(String[] args, Message message, Server server, User user, TextChannel channel) {
+
+        if (!hasAdminPermission(server, user))
+            return;
+
+        if(args.length != 2) {
+            new MessageBuilder()
+                    .append("Please provide a car number and discord user id")
+                    .send(channel);
+            notifyFailed(message);
+            return;
+        }
+        String numberString = args[0].replace("#", "");
+        String userId = args[1];
+
+        List<QueueRequest> requests = queueRepository.findByCarNumber(numberString);
+        if(requests.size() > 0) {
+            new MessageBuilder()
+                    .append(String.format("Car %s is already in queue", numberString))
+                    .send(channel);
+            notifyFailed(message);
+            return;
+        }
+
+        Optional<User> optUser = server.getMemberById(userId);
+        if(!optUser.isPresent()) {
+            new MessageBuilder()
+                    .append(String.format("User %s is not in server", userId))
+                    .send(channel);
+            notifyFailed(message);
+            return;
+        }
+
+        List<Driver> drivers = driverRepository.findByEntry_CarNumber(numberString);
+        if(drivers.size() == 0) {
+            new MessageBuilder()
+                    .append(String.format("Car number #%s is not registered", numberString))
+                    .send(channel);
+            notifyFailed(message);
+            return;
+        }
+
+        QueueRequest request = new QueueRequest();
+        request.setCarNumber(numberString);
+        request.setCreationTimestamp(message.getCreationTimestamp().toEpochMilli());
+        request.setUserMentionTag(user.getMentionTag());
+        request.setDriverName(drivers.get(0).getDriverName());
+        queueRepository.save(request);
+        updateQueueEmbed(server);
+        notifyChecked(message);
+    }
+
 
     @Command(aliases = "!disablequeue", description = "Disable qualifying for all users", showInHelpPage = false)
     public void onQualiDisable(Message message, Server server, User user, TextChannel channel) {
