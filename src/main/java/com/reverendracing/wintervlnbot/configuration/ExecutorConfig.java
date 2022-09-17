@@ -33,6 +33,12 @@ public class ExecutorConfig {
     @Value("${discord.username_listener.role}")
     private String protectedRole;
 
+    @Value("${discord.roles.manager_role_id}")
+    private String managerRoleId;
+
+    @Value("${discord.roles.crew_role_id}")
+    private String crewRoleId;
+
     @Value("${discord.username_listener.message_channel}")
     private String adminChannelName;
 
@@ -100,20 +106,5 @@ public class ExecutorConfig {
                 driverRepository,
                 protectedRole,
                 adminChannelName);
-    }
-
-    @Bean
-    public AdminExecutor adminExecutor(DiscordApi api, RequestBuilder requestBuilder) {
-        return new AdminExecutor(
-                requestBuilder,
-                entryRepository,
-                driverRepository,
-                classRepository,
-                entryCrewRepository,
-                api,
-                leagueId,
-                protectedRole,
-                adminChannelId,
-                serverId);
     }
 }

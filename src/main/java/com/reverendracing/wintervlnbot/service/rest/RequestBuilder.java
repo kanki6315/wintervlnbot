@@ -22,7 +22,6 @@ import com.reverendracing.wintervlnbot.data.Class;
 import com.reverendracing.wintervlnbot.data.Driver;
 import com.reverendracing.wintervlnbot.data.Entry;
 import com.reverendracing.wintervlnbot.data.EntryCrew;
-import com.reverendracing.wintervlnbot.service.executors.AdminExecutor;
 import com.reverendracing.wintervlnbot.util.model.ClassDTO;
 import com.reverendracing.wintervlnbot.util.model.DriverDTO;
 import com.reverendracing.wintervlnbot.util.model.EntryCrewDTO;
@@ -48,7 +47,7 @@ public class RequestBuilder {
         try {
             String response = makeRequest(
                 String.format(
-                    "https://www.isowc.org/api/leagues/%s/entries?includeDrivers=true",
+                    "https://www.artifactracing.com/api/leagues/%s/entries?includeDrivers=true",
                     leagueId));
 
             List<EntryDTO> dtos = mapper.readValue(response, new TypeReference<List<EntryDTO>>() {
@@ -76,6 +75,7 @@ public class RequestBuilder {
                     driver.setIrating(driverDTO.getIrating());
                     driver.setDriverName(driverDTO.getDriverName());
                     driver.setDriverId(driverDTO.getDriverId());
+                    driver.setdUserId(driverDTO.getdUserId());
                     entry.addDriver(driver);
                 }
                 for (EntryCrewDTO crewDTO : dto.getCrew()) {
@@ -97,7 +97,7 @@ public class RequestBuilder {
         try {
             String response = makeRequest(
                 String.format(
-                    "https://www.isowc.org/api/leagues/%s/classes",
+                    "https://www.artifactracing.com/api/leagues/%s/classes",
                     leagueId));
 
             List<ClassDTO> dtos = mapper.readValue(response, new TypeReference<List<ClassDTO>>() {
