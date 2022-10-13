@@ -79,18 +79,6 @@ public class ExecutorConfig {
     }
 
     @Bean
-    public RaceControlExecutor qualifyingManagementExecutor(
-            DiscordApi api) {
-
-        return new RaceControlExecutor(
-                api,
-                qualifyingChannelMessageName,
-                protestChannelName,
-            adminChannelName,
-                qualifyingRestEndpoint);
-    }
-
-    @Bean
     public InfoExecutor infoExecutor() {
 
         return new InfoExecutor(

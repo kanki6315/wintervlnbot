@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import javax.annotation.PostConstruct;
 
 import com.reverendracing.wintervlnbot.service.executors.*;
+import com.reverendracing.wintervlnbot.v2.commands.RaceControlCommand;
 import com.reverendracing.wintervlnbot.v2.commands.RefreshCommand;
 import org.h2.tools.Server;
 import org.javacord.api.DiscordApi;
@@ -48,20 +49,20 @@ public class AppConfig {
     public BotService botService(
             DiscordApi api,
             UserNicknameChangeListener userNicknameChangeListener,
-            RaceControlExecutor raceControlExecutor,
             InfoExecutor infoExecutor,
             QueryExecutor queryExecutor,
             IndyQExecutor indyQExecutor,
-            RefreshCommand refreshCommand) {
+            RefreshCommand refreshCommand,
+            RaceControlCommand raceControlCommand) {
 
         return new BotService(
                 api,
                 userNicknameChangeListener,
-                raceControlExecutor,
                 infoExecutor,
                 queryExecutor,
                 indyQExecutor,
-                refreshCommand);
+                refreshCommand,
+                raceControlCommand);
     }
 
     @Bean
