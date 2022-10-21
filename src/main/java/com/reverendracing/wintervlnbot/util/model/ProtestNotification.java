@@ -6,6 +6,7 @@ package com.reverendracing.wintervlnbot.util.model;
 
 public class ProtestNotification {
 
+    private int incidentNumber;
     private String protestingCarNumber;
     private String offendingCarNumber;
     private int lap;
@@ -71,5 +72,13 @@ public class ProtestNotification {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getIncidentNumber() {
+        return incidentNumber;
+    }
+
+    public void setIncidentNumber(int incidentNumber) {
+        this.incidentNumber = incidentNumber;
     }
 }

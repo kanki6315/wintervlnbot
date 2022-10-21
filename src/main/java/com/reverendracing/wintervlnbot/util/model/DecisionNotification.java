@@ -6,6 +6,7 @@ package com.reverendracing.wintervlnbot.util.model;
 
 public class DecisionNotification {
 
+    public int incidentNumber;
     public String decision;
     public String reason;
     public String otherCarNumber;
@@ -53,5 +54,13 @@ public class DecisionNotification {
 
     public void setPenalty(String penalty) {
         this.penalty = penalty;
+    }
+
+    public int getIncidentNumber() {
+        return incidentNumber;
+    }
+
+    public void setIncidentNumber(int incidentNumber) {
+        this.incidentNumber = incidentNumber;
     }
 }
