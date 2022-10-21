@@ -250,12 +250,13 @@ public class RaceControlCommand {
         connection.on("AnnounceProtest", (protestNotification) -> {
             ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
             new MessageBuilder()
-                    .append("Incident under investigation. Cars ")
+                    .append(String.format("#%d", protestNotification.getIncidentNumber()), MessageDecoration.BOLD)
+                    .append(": Incident under investigation. Cars ")
                     .append(getNumber(protestNotification.getProtestingCarNumber()), MessageDecoration.BOLD)
                     .append(" & ")
                     .append(getNumber(protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
                     .append(" - ")
-                    .append(protestNotification.getReason(), MessageDecoration.BOLD)
+                    .append(protestNotification.getReason())
                     .send(channel);
         }, ProtestNotification.class);
         connection.on("AnnounceDecision", (decisionNotification) -> {
@@ -263,23 +264,19 @@ public class RaceControlCommand {
             ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
             if(decisionNotification.getDecision().equals("No Further Action")) {
                 new MessageBuilder()
-                        .append("No Further Action. Cars ")
+                        .append(String.format("#%d", decisionNotification.getIncidentNumber()), MessageDecoration.BOLD)
+                        .append(": No Further Action. Cars ")
                         .append(getNumber(decisionNotification.getOtherCarNumber()), MessageDecoration.BOLD)
                         .append(" & ")
                         .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
                         .append(" - ")
-                        .append(decisionNotification.getReason(), MessageDecoration.BOLD)
-                        .send(channel);
-            } else if (decisionNotification.getDecision().equals("Warning")) {
-                new MessageBuilder()
-                        .append(decisionNotification.getDecision())
-                        .append(" - ")
-                        .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
-                        .append(". ")
                         .append(decisionNotification.getReason())
                         .send(channel);
-            } else {
+            }
+            else {
                 new MessageBuilder()
+                        .append(String.format("#%d", decisionNotification.getIncidentNumber()), MessageDecoration.BOLD)
+                        .append(": ")
                         .append(decisionNotification.getDecision())
                         .append(" - ")
                         .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
