@@ -272,6 +272,16 @@ public class RaceControlCommand {
                         .append(" - ")
                         .append(decisionNotification.getReason())
                         .send(channel);
+            } else if (decisionNotification.getDecision().equals("Warning")) {
+                new MessageBuilder()
+                        .append(String.format("#%d", decisionNotification.getIncidentNumber()), MessageDecoration.BOLD)
+                        .append(": ")
+                        .append(decisionNotification.getDecision())
+                        .append(" - ")
+                        .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
+                        .append(". ")
+                        .append(decisionNotification.getReason())
+                        .send(channel);
             }
             else {
                 new MessageBuilder()
