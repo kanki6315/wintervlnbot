@@ -11,6 +11,7 @@ import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
 import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
 import com.reverendracing.wintervlnbot.util.model.DecisionNotification;
 import com.reverendracing.wintervlnbot.util.model.ProtestNotification;
+import com.reverendracing.wintervlnbot.util.model.TrackLimitsViolation;
 import io.reactivex.Completable;
 import me.s3ns3iw00.jcommands.Command;
 import me.s3ns3iw00.jcommands.builder.SlashCommandBuilder;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.reverendracing.wintervlnbot.util.MessageUtil.*;
 import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyFailed;
@@ -38,6 +40,8 @@ public class RaceControlCommand {
     private String qualifyingAnnouncementChannel;
     @Value("${discord.protests.message_channel}")
     private String protestAnnouncementChannel;
+    @Value("${discord.protests.race_control_channel}")
+    private String raceControlPrivateChannel;
 
     @Value("${discord.username_listener.message_channel}")
     private String adminChannel;
@@ -297,6 +301,22 @@ public class RaceControlCommand {
                         .send(channel);
             }
         }, DecisionNotification.class);
+        connection.on("SubmitSingleTrackLimitViolationDetected", (trackLimitsViolation) -> {
+            ServerTextChannel channel = api.getServerTextChannelsByName(raceControlPrivateChannel).stream().findFirst().get();
+            new MessageBuilder()
+                    .append(String.format("#%s", trackLimitsViolation.getCarNumber()), MessageDecoration.BOLD)
+                    .append(": Single Track Limit Violation Detected on Lap: " + trackLimitsViolation.getLapNumbers()
+                            .stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")))
+                    .send(channel);
+        }, TrackLimitsViolation.class);
+        connection.on("SubmitMultipleTrackLimitViolationsDetected", (trackLimitsViolation) -> {
+            ServerTextChannel channel = api.getServerTextChannelsByName(raceControlPrivateChannel).stream().findFirst().get();
+            new MessageBuilder()
+                    .append(String.format("#%s", trackLimitsViolation.getCarNumber()), MessageDecoration.BOLD)
+                    .append(": Multiple Track Limit Violations Detected on Laps: " + trackLimitsViolation.getLapNumbers()
+                            .stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")))
+                    .send(channel);
+        }, TrackLimitsViolation.class);
 
         return connection;
     }
