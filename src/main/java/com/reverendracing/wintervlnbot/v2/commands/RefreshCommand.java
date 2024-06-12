@@ -134,18 +134,18 @@ public class RefreshCommand {
         entryCrewRepository.saveAll(entryCrew);
     }
 
-    private String getRoleNameFromEntry(Entry entry) {
+    private String getRoleNameFromEntryOrDriver(Entry entry, List<Driver> drivers) {
         if (isTeamLeague) {
             return String.format("#%s - %s", entry.getCarNumber(), entry.getTeamName());
         }
-        return String.format("#%s - %s", entry.getCarNumber(), entry.getDrivers().get(0).getDriverName());
+        return String.format("#%s - %s", entry.getCarNumber(), drivers.get(0).getDriverName());
     }
 
-    private String getVoiceChannelNameFromEntry(Entry entry) {
+    private String getVoiceChannelNameFromEntryOrDriver(Entry entry, List<Driver> drivers) {
         if (isTeamLeague) {
             return String.format("#%s - %s", entry.getCarNumber(), entry.getTeamName());
         }
-        return String.format("#%s - %s", entry.getCarNumber(), entry.getDrivers().get(0).getDriverName());
+        return String.format("#%s - %s", entry.getCarNumber(), drivers.get(0).getDriverName());
     }
 
     @Scheduled(fixedRate = 1800000, initialDelay = 90000)
@@ -197,14 +197,14 @@ public class RefreshCommand {
                     logger.info(String.format("Starting sync for %s - %s", entry.getCarNumber(), entry.getTeamName()));
                     ServerUpdater updater = new ServerUpdater(server);
                     Role entryRole = server.getRoleById(entry.getdRoleId()).get();
-                    if (!getRoleNameFromEntry(entry).equalsIgnoreCase(entryRole.getName())) {
+                    if (!getRoleNameFromEntryOrDriver(entry, drivers).equalsIgnoreCase(entryRole.getName())) {
                         logger.info(String.format("Updating role name for %s - %s", entry.getCarNumber(), entry.getTeamName()));
-                        entryRole.updateName(getRoleNameFromEntry(entry)).join();
+                        entryRole.updateName(getRoleNameFromEntryOrDriver(entry, drivers)).join();
                     }
                     ServerVoiceChannel voiceChannel = server.getVoiceChannelById(entry.getdVoiceChannelId()).get();
-                    if (!getVoiceChannelNameFromEntry(entry).equalsIgnoreCase(voiceChannel.getName())) {
+                    if (!getVoiceChannelNameFromEntryOrDriver(entry, drivers).equalsIgnoreCase(voiceChannel.getName())) {
                         logger.info(String.format("Updating voice channel name for %s - %s", entry.getCarNumber(), entry.getTeamName()));
-                        voiceChannel.updateName(getVoiceChannelNameFromEntry(entry)).join();
+                        voiceChannel.updateName(getVoiceChannelNameFromEntryOrDriver(entry, drivers)).join();
                     }
                     List<String> driverDiscordIds = drivers.stream().map(Driver::getdUserId).filter(s -> StringUtils.isNotEmpty(s)).
                             distinct().collect(Collectors.toList());
