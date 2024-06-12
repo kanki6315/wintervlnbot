@@ -42,6 +42,8 @@ public class RefreshCommand {
     private String leagueId;
     @Value("${discord.server_id}")
     private String serverId;
+    @Value("${discord.is_team_league}")
+    private boolean isTeamLeague;
     @Value("${discord.roles.admin_role_id}")
     private String adminRoleId;
     @Value("${discord.roles.manager_role_id}")
@@ -268,31 +270,33 @@ public class RefreshCommand {
                             updater.addRolesToUser(user, rolesTBA);
                         }
                     }
-                    for(String discordId : managerDiscordIds) {
-                        Optional<User> optUser = server.getMemberById(discordId);
-                        if(!optUser.isPresent()) {
-                            logger.info(String.format("User %s not in server", discordId));
-                            continue;
-                        }
-                        User user = optUser.get();
-                        List<Role> roles = user.getRoles(server);
-                        List<Role> rolesTBA = new ArrayList<>();
-                        if(!driverDiscordIds.contains(discordId) && !roles.contains(classRole)) {
-                            logger.info("adding class role to: " + user.getDiscriminatedName());
-                            rolesTBA.add(classRole);
-                        }
-                        if(!driverDiscordIds.contains(discordId) && !roles.contains(entryRole)) {
-                            logger.info("adding entry role to: " + user.getDiscriminatedName());
-                            rolesTBA.add(entryRole);
-                        }
-                        if(!roles.contains(managerRole)) {
-                            logger.info("adding manager role to: " + user.getDiscriminatedName());
-                            rolesTBA.add(managerRole);
-                        }
-                        if(rolesTBA.size() > 0) {
-                            hasUpdates = true;
-                            newCounter++;
-                            updater.addRolesToUser(user, rolesTBA);
+                    if (isTeamLeague) {
+                        for(String discordId : managerDiscordIds) {
+                            Optional<User> optUser = server.getMemberById(discordId);
+                            if(!optUser.isPresent()) {
+                                logger.info(String.format("User %s not in server", discordId));
+                                continue;
+                            }
+                            User user = optUser.get();
+                            List<Role> roles = user.getRoles(server);
+                            List<Role> rolesTBA = new ArrayList<>();
+                            if(!driverDiscordIds.contains(discordId) && !roles.contains(classRole)) {
+                                logger.info("adding class role to: " + user.getDiscriminatedName());
+                                rolesTBA.add(classRole);
+                            }
+                            if(!driverDiscordIds.contains(discordId) && !roles.contains(entryRole)) {
+                                logger.info("adding entry role to: " + user.getDiscriminatedName());
+                                rolesTBA.add(entryRole);
+                            }
+                            if(!roles.contains(managerRole)) {
+                                logger.info("adding manager role to: " + user.getDiscriminatedName());
+                                rolesTBA.add(managerRole);
+                            }
+                            if(rolesTBA.size() > 0) {
+                                hasUpdates = true;
+                                newCounter++;
+                                updater.addRolesToUser(user, rolesTBA);
+                            }
                         }
                     }
                     allDriverIds.addAll(entryDriverIds);
