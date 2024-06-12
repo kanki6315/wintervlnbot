@@ -135,11 +135,17 @@ public class RefreshCommand {
     }
 
     private String getRoleNameFromEntry(Entry entry) {
-        return String.format("%s", entry.getTeamName());
+        if (isTeamLeague) {
+            return String.format("#%s - %s", entry.getCarNumber(), entry.getTeamName());
+        }
+        return String.format("#%s - %s", entry.getCarNumber(), entry.getDrivers().get(0).getDriverName());
     }
 
     private String getVoiceChannelNameFromEntry(Entry entry) {
-        return String.format("#%s - %s", entry.getCarNumber(), entry.getTeamName());
+        if (isTeamLeague) {
+            return String.format("#%s - %s", entry.getCarNumber(), entry.getTeamName());
+        }
+        return String.format("#%s - %s", entry.getCarNumber(), entry.getDrivers().get(0).getDriverName());
     }
 
     @Scheduled(fixedRate = 1800000, initialDelay = 90000)
