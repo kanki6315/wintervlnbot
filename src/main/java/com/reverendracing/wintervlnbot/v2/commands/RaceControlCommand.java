@@ -252,7 +252,7 @@ public class RaceControlCommand {
                 .create(restApiUrl)
                 .build();
         connection.on("AnnounceProtest", (protestNotification) -> {
-            ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
+            Server server = api.getServerById(serverId).get();
             new MessageBuilder()
                     .append(String.format("#%d", protestNotification.getIncidentNumber()), MessageDecoration.BOLD)
                     .append(": Incident under investigation. Cars ")
@@ -261,11 +261,11 @@ public class RaceControlCommand {
                     .append(getNumber(protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
                     .append(" - ")
                     .append(protestNotification.getReason())
-                    .send(channel);
+                    .send(getAnnouncementChannel(server));
         }, ProtestNotification.class);
         connection.on("AnnounceDecision", (decisionNotification) -> {
+            Server server = api.getServerById(serverId).get();
 
-            ServerTextChannel channel = api.getServerTextChannelsByName(protestAnnouncementChannel).stream().findFirst().get();
             if(decisionNotification.getDecision().equals("No Further Action")) {
                 new MessageBuilder()
                         .append(String.format("#%d", decisionNotification.getIncidentNumber()), MessageDecoration.BOLD)
@@ -275,7 +275,7 @@ public class RaceControlCommand {
                         .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
                         .append(" - ")
                         .append(decisionNotification.getReason())
-                        .send(channel);
+                        .send(getAnnouncementChannel(server));
             } else if (decisionNotification.getDecision().equals("Warning")) {
                 new MessageBuilder()
                         .append(String.format("#%d", decisionNotification.getIncidentNumber()), MessageDecoration.BOLD)
@@ -285,7 +285,7 @@ public class RaceControlCommand {
                         .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
                         .append(". ")
                         .append(decisionNotification.getReason())
-                        .send(channel);
+                        .send(getAnnouncementChannel(server));
             }
             else {
                 new MessageBuilder()
@@ -298,24 +298,24 @@ public class RaceControlCommand {
                         .append(decisionNotification.getPenalty(), MessageDecoration.BOLD)
                         .append(". ")
                         .append(decisionNotification.getReason())
-                        .send(channel);
+                        .send(getAnnouncementChannel(server));
             }
         }, DecisionNotification.class);
         connection.on("SubmitSingleTrackLimitViolationDetected", (trackLimitsViolation) -> {
-            ServerTextChannel channel = api.getServerTextChannelsByName(raceControlPrivateChannel).stream().findFirst().get();
+            Server server = api.getServerById(serverId).get();
             new MessageBuilder()
                     .append(String.format("#%s", trackLimitsViolation.getCarNumber()), MessageDecoration.BOLD)
                     .append(": Single Track Limit Violation Detected on Lap: " + trackLimitsViolation.getLapNumbers()
                             .stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")))
-                    .send(channel);
+                    .send(getRaceControlAnnouncementChannel(server));
         }, TrackLimitsViolation.class);
         connection.on("SubmitMultipleTrackLimitViolationsDetected", (trackLimitsViolation) -> {
-            ServerTextChannel channel = api.getServerTextChannelsByName(raceControlPrivateChannel).stream().findFirst().get();
+            Server server = api.getServerById(serverId).get();
             new MessageBuilder()
                     .append(String.format("#%s", trackLimitsViolation.getCarNumber()), MessageDecoration.BOLD)
                     .append(": Multiple Track Limit Violations Detected on Laps: " + trackLimitsViolation.getLapNumbers()
                             .stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")))
-                    .send(channel);
+                    .send(getRaceControlAnnouncementChannel(server));
         }, TrackLimitsViolation.class);
 
         return connection;
@@ -327,5 +327,9 @@ public class RaceControlCommand {
 
     private ServerTextChannel getAnnouncementChannel(Server server) {
         return getChannelByName(protestAnnouncementChannel, server);
+    }
+
+    private ServerTextChannel getRaceControlAnnouncementChannel(Server server) {
+        return getChannelByName(raceControlPrivateChannel, server);
     }
 }
