@@ -8,7 +8,7 @@ package com.reverendracing.wintervlnbot.configuration;
 import java.sql.SQLException;
 import java.util.TimeZone;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import com.reverendracing.wintervlnbot.service.executors.*;
 import com.reverendracing.wintervlnbot.v2.commands.RaceControlCommand;
@@ -20,10 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.reverendracing.wintervlnbot.data.EntryRepository;
 import com.reverendracing.wintervlnbot.service.BotService;
 import com.reverendracing.wintervlnbot.service.UserNicknameChangeListener;
 import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
