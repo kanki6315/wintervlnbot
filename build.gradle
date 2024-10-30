@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.reverendracing'
-version = '0.5.0'
+version = '0.6.0'
 
 java {
 	toolchain {
@@ -22,9 +22,9 @@ dependencies {
 	implementation('org.springframework.boot:spring-boot-starter')
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 
-	implementation 'org.javacord:javacord:3.4.0'
+	implementation 'org.javacord:javacord:3.8.0'
 
-	implementation 'com.github.S3nS3IW00:JCommands:4.2.0'
+	implementation 'io.github.s3ns3iw00:jcommands:6.0.0'
 
 	implementation 'de.btobastian.sdcf4j:sdcf4j-core:v1.0.10'
 	implementation 'de.btobastian.sdcf4j:sdcf4j-javacord:v1.0.10'

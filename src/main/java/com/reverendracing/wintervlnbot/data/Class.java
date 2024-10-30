@@ -4,14 +4,10 @@
  */
 package com.reverendracing.wintervlnbot.data;
 
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "class")

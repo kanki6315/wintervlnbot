@@ -20,8 +20,6 @@ public class CommandConfig {
     ClassRepository classRepository;
     @Autowired
     EntryCrewRepository entryCrewRepository;
-    @Autowired
-    QueueRequestRepository queueRequestRepository;
 
     @Bean
     public RefreshCommand refreshCommand(DiscordApi api, RequestBuilder requestBuilder) {

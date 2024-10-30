@@ -3,22 +3,13 @@ package com.reverendracing.wintervlnbot.v2.commands;
 import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
-import com.reverendracing.wintervlnbot.data.ClassRepository;
-import com.reverendracing.wintervlnbot.data.DriverRepository;
-import com.reverendracing.wintervlnbot.data.EntryCrewRepository;
-import com.reverendracing.wintervlnbot.data.EntryRepository;
-import com.reverendracing.wintervlnbot.service.executors.RaceControlExecutor;
-import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
 import com.reverendracing.wintervlnbot.util.model.DecisionNotification;
 import com.reverendracing.wintervlnbot.util.model.ProtestNotification;
 import com.reverendracing.wintervlnbot.util.model.TrackLimitsViolation;
 import io.reactivex.Completable;
-import me.s3ns3iw00.jcommands.Command;
-import me.s3ns3iw00.jcommands.builder.SlashCommandBuilder;
-import org.apache.commons.lang3.StringUtils;
+import me.s3ns3iw00.jcommands.type.ServerCommand;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
 import org.javacord.api.entity.server.Server;
@@ -29,30 +20,24 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.reverendracing.wintervlnbot.util.MessageUtil.*;
-import static com.reverendracing.wintervlnbot.util.MessageUtil.notifyFailed;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.getChannelByName;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.sendStackTraceToChannel;
 
 public class RaceControlCommand {
 
-    private boolean qualiEnabled;
-
-    @Value("${discord.qualifying.message_channel}")
-    private String qualifyingAnnouncementChannel;
-    @Value("${discord.protests.message_channel}")
+    @Value("${discord.channels.protest_message_channel}")
     private String protestAnnouncementChannel;
     @Value("${discord.protests.race_control_channel}")
     private String raceControlPrivateChannel;
 
-    @Value("${discord.username_listener.message_channel}")
+    @Value("${discord.channels.admin_channel}")
     private String adminChannel;
-    @Value("${discord.qualifying.api_endpoint}")
+    @Value("${artifactracing.api_endpoint}")
     private String restApiUrl;
 
-    private DiscordApi api;
+    private final DiscordApi api;
     private HubConnection socket;
 
-    @Value("${discord.league_id}")
-    private String leagueId;
     @Value("${discord.server_id}")
     private String serverId;
     @Value("${discord.roles.admin_role_id}")
@@ -64,21 +49,18 @@ public class RaceControlCommand {
     @Value("${discord.roles.driver_role_id}")
     private String driverRoleId;
 
-    private final Logger logger;
+    private final static Logger logger = LoggerFactory.getLogger(RaceControlCommand.class);
 
     public RaceControlCommand(DiscordApi api) {
         this.api = api;
-
-        this.logger = LoggerFactory.getLogger(RaceControlCommand.class);
-
-        qualiEnabled = false;
     }
 
-    public Command generateStartSocket() {
+    public ServerCommand generateStartSocket() {
         Server server = api.getServerById(serverId).get();
-        SlashCommandBuilder startSocketCommand = new SlashCommandBuilder("startsocket", "Start Socket")
-                .arguments()
-                .onAction(event -> {
+        ServerCommand startSocketCommand = new ServerCommand("startsocket", "Start Socket");
+
+        startSocketCommand
+                .setOnAction(event -> {
                     event.getResponder().respondLater().thenAccept(updater -> {
                         updater.setContent("Socket connection in progress.").update();
                         try {
@@ -101,14 +83,15 @@ public class RaceControlCommand {
                     });
                 });
 
-        return startSocketCommand.getCommand();
+        return startSocketCommand;
     }
 
-    public Command generateStopSocket() {
+    public ServerCommand generateStopSocket() {
         Server server = api.getServerById(serverId).get();
-        SlashCommandBuilder stopSocketCommand = new SlashCommandBuilder("stopsocket", "Stop Socket")
-                .arguments()
-                .onAction(event -> {
+        ServerCommand stopSocketCommand = new ServerCommand("stopsocket", "Stop Socket");
+
+        stopSocketCommand
+                .setOnAction(event -> {
                     event.getResponder().respondLater().thenAccept(updater -> {
                         updater.setContent("Socket connection in progress.").update();
                         try {
@@ -131,14 +114,15 @@ public class RaceControlCommand {
                     });
                 });
 
-        return stopSocketCommand.getCommand();
+        return stopSocketCommand;
     }
 
-    public Command generateRestartSocket() {
+    public ServerCommand generateRestartSocket() {
         Server server = api.getServerById(serverId).get();
-        SlashCommandBuilder stopSocketCommand = new SlashCommandBuilder("restartsocket", "Restart Socket")
-                .arguments()
-                .onAction(event -> {
+        ServerCommand stopSocketCommand = new ServerCommand("restartsocket", "Restart Socket");
+
+        stopSocketCommand
+                .setOnAction(event -> {
                     event.getResponder().respondLater().thenAccept(updater -> {
                         updater.setContent("Socket connection in progress.").update();
                         try {
@@ -160,7 +144,7 @@ public class RaceControlCommand {
                     });
                 });
 
-        return stopSocketCommand.getCommand();
+        return stopSocketCommand;
     }
 
     private void makeAnnouncement(final String session, final String state, final ServerTextChannel announcementChannel) {
@@ -213,9 +197,9 @@ public class RaceControlCommand {
             return false;
 
         socket.send("AddToGroup", "Bot");
-        LoggerFactory.getLogger(RaceControlExecutor.class).info(
+        LoggerFactory.getLogger(RaceControlCommand.class).info(
                 String.format("KeepAlive %d", socket.getKeepAliveInterval()));
-        LoggerFactory.getLogger(RaceControlExecutor.class).info(
+        LoggerFactory.getLogger(RaceControlCommand.class).info(
                 String.format("ServerTimeout %d", socket.getServerTimeout()));
         return true;
     }
@@ -319,10 +303,6 @@ public class RaceControlCommand {
         }, TrackLimitsViolation.class);
 
         return connection;
-    }
-
-    private ServerTextChannel getQualifyingChannel(Server server) {
-        return getChannelByName(qualifyingAnnouncementChannel, server);
     }
 
     private ServerTextChannel getAnnouncementChannel(Server server) {

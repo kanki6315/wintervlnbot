@@ -4,9 +4,9 @@
  */
 package com.reverendracing.wintervlnbot.util.model;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
 
 public class EntryDTO {
 

@@ -1,10 +1,9 @@
 package com.reverendracing.wintervlnbot.v2.commands;
 
-import com.reverendracing.wintervlnbot.data.*;
 import com.reverendracing.wintervlnbot.data.Class;
+import com.reverendracing.wintervlnbot.data.*;
 import com.reverendracing.wintervlnbot.service.rest.RequestBuilder;
-import me.s3ns3iw00.jcommands.builder.SlashCommandBuilder;
-import me.s3ns3iw00.jcommands.Command;
+import me.s3ns3iw00.jcommands.type.ServerCommand;
 import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
@@ -74,12 +73,15 @@ public class RefreshCommand {
 
     }
 
-    public Command generateRefreshCommand() {
+    public ServerCommand generateRefreshCommand() {
         Server server = api.getServerById(serverId).get();
         Role adminRole = server.getRoleById(adminRoleId).get();
-        SlashCommandBuilder testCommandBuilder = new SlashCommandBuilder("refresh", "Refresh bot cache")
-                .arguments()
-                .onAction(event -> {
+        ServerCommand command = new ServerCommand("refresh", "Refresh bot cache");
+
+        command.setOnAction(event -> {
+            if (!event.getSender().getRoles(server).contains(adminRole)) {
+                return;
+            }
                     event.getResponder().respondLater().thenAccept(updater -> {
                         updater.setContent("Refresh in progress.").update();
 
@@ -105,7 +107,7 @@ public class RefreshCommand {
                         }
                     });
                 });
-        return testCommandBuilder.getCommand();
+        return command;
     }
 
     private void syncTeamsAndDrivers() {

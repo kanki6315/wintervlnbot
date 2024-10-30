@@ -20,18 +20,6 @@ import org.javacord.api.entity.user.User;
 
 public class MessageUtil {
 
-    public static void notifyChecked(Message message) {
-        message.addReaction("👍");
-    }
-
-    public static void notifyFailed(Message message) {
-        message.addReaction("👎");
-    }
-
-    public static void notifyUnallowed(Message message) {
-        message.addReaction("❌");
-    }
-
     public static void sendStackTraceToChannel(
             String message,
             TextChannel channel,
