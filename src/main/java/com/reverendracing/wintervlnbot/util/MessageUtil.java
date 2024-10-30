@@ -55,4 +55,10 @@ public class MessageUtil {
         List<ServerTextChannel> searchChannels = server.getTextChannelsByName(name);
         return searchChannels.get(0);
     }
+
+    public static ServerTextChannel getChannelById(
+            final String id,
+            final Server server) {
+        return server.getTextChannelById(id).get();
+    }
 }

@@ -22,8 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.reverendracing.wintervlnbot.util.MessageUtil.getChannelByName;
-import static com.reverendracing.wintervlnbot.util.MessageUtil.sendStackTraceToChannel;
+import static com.reverendracing.wintervlnbot.util.MessageUtil.*;
 import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
 public class RefreshCommand {
@@ -51,8 +50,8 @@ public class RefreshCommand {
     private String crewRoleId;
     @Value("${discord.roles.driver_role_id}")
     private String driverRoleId;
-    @Value("${discord.username_listener.message_channel}")
-    private String adminChannelName;
+    @Value("${discord.channels.admin_channel}")
+    private String adminChannelId;
 
     private final Logger logger;
 
@@ -390,7 +389,7 @@ public class RefreshCommand {
             logger.info(String.format("Discord Sync successful. %d users had roles removed", removeCounter));
             logger.info(String.format("Discord Sync successful. %d users had roles wiped", wipedCounter));
             ServerTextChannel
-                    channel = getChannelByName(adminChannelName, server);
+                    channel = getChannelById(adminChannelId, api.getServerById(serverId).get());
 
             if (newCounter > 0) {
                 new MessageBuilder()
@@ -410,7 +409,7 @@ public class RefreshCommand {
         } catch (Exception ex) {
             logger.error(ex.getMessage());
             ServerTextChannel
-                    channel = getChannelByName(adminChannelName, api.getServerById(serverId).get());
+                    channel = getChannelById(adminChannelId, api.getServerById(serverId).get());
 
             new MessageBuilder()
                     .append(String.format("Error while syncing discord roles: %s", ex.getMessage()))
