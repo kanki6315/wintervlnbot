@@ -41,14 +41,13 @@ public class BotService {
         for (var server: api.getServers()) {
             server.getSlashCommands().thenAccept(slashCommands -> {
                 for (SlashCommand slashCommand : slashCommands) {
-                    slashCommand.delete();
+                    slashCommand.delete().join();
                 }
-            }).thenAccept(aVoid -> {
-                me.s3ns3iw00.jcommands.CommandHandler.registerCommand(refreshCommand.generateRefreshCommand(), server);
-                me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateStartSocket(), server);
-                me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateRestartSocket(), server);
-                me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateStopSocket(), server);
-            });
+            }).join();
+            me.s3ns3iw00.jcommands.CommandHandler.registerCommand(refreshCommand.generateRefreshCommand(), server);
+            me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateStartSocket(), server);
+            me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateRestartSocket(), server);
+            me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateStopSocket(), server);
         }
 
         api.addReconnectListener(event -> event.getApi().updateActivity(ActivityType.PLAYING, "!help to learn more!"));
