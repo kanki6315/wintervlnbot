@@ -12,8 +12,12 @@ import de.btobastian.sdcf4j.handler.JavacordHandler;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.interaction.SlashCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BotService {
+
+    private final static Logger logger = LoggerFactory.getLogger(BotService.class);
 
     private final DiscordApi api;
 
@@ -39,15 +43,27 @@ public class BotService {
         handler = new JavacordHandler(api);
         me.s3ns3iw00.jcommands.CommandHandler.setApi(api);
         for (var server: api.getServers()) {
-            server.getSlashCommands().thenAccept(slashCommands -> {
+            /*server.getSlashCommands().thenAccept(slashCommands -> {
                 for (SlashCommand slashCommand : slashCommands) {
-                    slashCommand.delete().join();
+                    logger.info("Deleting command");
+                    slashCommand.delete();
                 }
-            }).join();
-            me.s3ns3iw00.jcommands.CommandHandler.registerCommand(refreshCommand.generateRefreshCommand(), server);
-            me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateStartSocket(), server);
-            me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateRestartSocket(), server);
-            me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateStopSocket(), server);
+            });*/
+
+            logger.info("Requesting commands");
+            try {
+                logger.info("Adding refresh command");
+                me.s3ns3iw00.jcommands.CommandHandler.registerCommand(refreshCommand.generateRefreshCommand(), server);
+                logger.info("Adding start socket command");
+                me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateStartSocket(), server);
+                logger.info("Adding restart socket command");
+                me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateRestartSocket(), server);
+                logger.info("Adding stop socket command");
+                me.s3ns3iw00.jcommands.CommandHandler.registerCommand(raceControlCommand.generateStopSocket(), server);
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+
         }
 
         api.addReconnectListener(event -> event.getApi().updateActivity(ActivityType.PLAYING, "!help to learn more!"));
