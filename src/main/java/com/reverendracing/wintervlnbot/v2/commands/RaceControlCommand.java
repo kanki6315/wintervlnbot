@@ -5,7 +5,7 @@ import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
 import com.reverendracing.wintervlnbot.util.model.DecisionNotification;
 import com.reverendracing.wintervlnbot.util.model.ProtestNotification;
-import com.reverendracing.wintervlnbot.util.model.TrackLimitsViolation;
+import com.reverendracing.wintervlnbot.util.model.TrackLimitsUpdate;
 import io.reactivex.Completable;
 import me.s3ns3iw00.jcommands.type.ServerCommand;
 import org.javacord.api.DiscordApi;
@@ -285,22 +285,13 @@ public class RaceControlCommand {
                         .send(getAnnouncementChannel(server));
             }
         }, DecisionNotification.class);
-        connection.on("SubmitSingleTrackLimitViolationDetected", (trackLimitsViolation) -> {
+        connection.on("PostTrackLimitViolationDetected", (trackLimitsUpdate) -> {
             Server server = api.getServerById(serverId).get();
             new MessageBuilder()
-                    .append(String.format("#%s", trackLimitsViolation.getCarNumber()), MessageDecoration.BOLD)
-                    .append(": Single Track Limit Violation Detected on Lap: " + trackLimitsViolation.getLapNumbers()
-                            .stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")))
+                    .append(String.format("#%s | %s", trackLimitsUpdate.getCarNumber(), trackLimitsUpdate.getTeamName()), MessageDecoration.BOLD)
+                    .append(": " + (trackLimitsUpdate.isPractice() ? "Practice " : "Race ") + "Track Limit Violation Detected. Total Count: " + trackLimitsUpdate.getNumIncidents())
                     .send(getRaceControlAnnouncementChannel(server));
-        }, TrackLimitsViolation.class);
-        connection.on("SubmitMultipleTrackLimitViolationsDetected", (trackLimitsViolation) -> {
-            Server server = api.getServerById(serverId).get();
-            new MessageBuilder()
-                    .append(String.format("#%s", trackLimitsViolation.getCarNumber()), MessageDecoration.BOLD)
-                    .append(": Multiple Track Limit Violations Detected on Laps: " + trackLimitsViolation.getLapNumbers()
-                            .stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")))
-                    .send(getRaceControlAnnouncementChannel(server));
-        }, TrackLimitsViolation.class);
+        }, TrackLimitsUpdate.class);
 
         return connection;
     }
