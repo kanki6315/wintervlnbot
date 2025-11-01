@@ -9,6 +9,8 @@ public class ProtestNotification {
     private int incidentNumber;
     private String protestingCarNumber;
     private String offendingCarNumber;
+    private String protestingCarName;
+    private String offendingCarName;
     private int lap;
     private String sector;
     private String timeStamp;
@@ -80,5 +82,21 @@ public class ProtestNotification {
 
     public void setIncidentNumber(int incidentNumber) {
         this.incidentNumber = incidentNumber;
+    }
+
+    public String getProtestingCarName() {
+        return protestingCarName;
+    }
+
+    public void setProtestingCarName(String protestingCarName) {
+        this.protestingCarName = protestingCarName;
+    }
+
+    public String getOffendingCarName() {
+        return offendingCarName;
+    }
+
+    public void setOffendingCarName(String offendingCarName) {
+        this.offendingCarName = offendingCarName;
     }
 }

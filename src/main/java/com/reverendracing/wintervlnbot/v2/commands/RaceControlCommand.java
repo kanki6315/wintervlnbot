@@ -8,15 +8,18 @@ import com.reverendracing.wintervlnbot.util.model.ProtestNotification;
 import com.reverendracing.wintervlnbot.util.model.TrackLimitsUpdate;
 import io.reactivex.Completable;
 import me.s3ns3iw00.jcommands.type.ServerCommand;
+import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.awt.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -237,60 +240,55 @@ public class RaceControlCommand {
                 .build();
         connection.on("AnnounceProtest", (protestNotification) -> {
             Server server = api.getServerById(serverId).get();
-            new MessageBuilder()
-                    .append(String.format("#%d", protestNotification.getIncidentNumber()), MessageDecoration.BOLD)
-                    .append(": Incident under investigation. Cars ")
-                    .append(getNumber(protestNotification.getProtestingCarNumber()), MessageDecoration.BOLD)
-                    .append(" & ")
-                    .append(getNumber(protestNotification.getOffendingCarNumber()), MessageDecoration.BOLD)
-                    .append(" - ")
-                    .append(protestNotification.getReason())
-                    .send(getAnnouncementChannel(server));
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle(String.format("Incident Report - %d", protestNotification.getIncidentNumber()))
+                    .setDescription(protestNotification.getReason())
+                    .addInlineField("Filed By", String.format("#%s %s", protestNotification.getProtestingCarNumber(), protestNotification.getProtestingCarName()))
+                    .addInlineField("Under Review", String.format("#%s %s", protestNotification.getOffendingCarNumber(), protestNotification.getOffendingCarName()))
+                    .addField("Description", protestNotification.getDescription())
+                    .setColor(Color.YELLOW);
+            var channel = getAnnouncementChannel(server);
+            channel.sendMessage(embed);
         }, ProtestNotification.class);
         connection.on("AnnounceDecision", (decisionNotification) -> {
             Server server = api.getServerById(serverId).get();
 
+            var embed = new EmbedBuilder();
+            var channel = getAnnouncementChannel(server);
             if(decisionNotification.getDecision().equals("No Further Action")) {
-                new MessageBuilder()
-                        .append(String.format("#%d", decisionNotification.getIncidentNumber()), MessageDecoration.BOLD)
-                        .append(": No Further Action. Cars ")
-                        .append(getNumber(decisionNotification.getOtherCarNumber()), MessageDecoration.BOLD)
-                        .append(" & ")
-                        .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
-                        .append(" - ")
-                        .append(decisionNotification.getReason())
-                        .send(getAnnouncementChannel(server));
+                embed.setTitle(String.format("Incident Decision - %d", decisionNotification.getIncidentNumber()))
+                        .setDescription(decisionNotification.getDecision())
+                        .addField("Reason", decisionNotification.getReason())
+                        .addField("Involved Cars", String.format("%s + %s", decisionNotification.getPenalizedCarName(), decisionNotification.getOtherCarName()))
+                        .setColor(Color.GREEN);
             } else if (decisionNotification.getDecision().equals("Warning")) {
-                new MessageBuilder()
-                        .append(String.format("#%d", decisionNotification.getIncidentNumber()), MessageDecoration.BOLD)
-                        .append(": ")
-                        .append(decisionNotification.getDecision())
-                        .append(" - ")
-                        .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
-                        .append(". ")
-                        .append(decisionNotification.getReason())
-                        .send(getAnnouncementChannel(server));
+                embed.setTitle(String.format("Incident Decision - %d", decisionNotification.getIncidentNumber()))
+                        .setDescription(decisionNotification.getDecision())
+                        .addField("Reason", decisionNotification.getReason());
+                if (StringUtils.isNotEmpty(decisionNotification.getPenalty())) {
+                    embed.addInlineField("Penalty", decisionNotification.getPenalty());
+                }
+                embed.addInlineField("Warned Car", String.format("#%s %s", decisionNotification.getPenalizedCarNumber(), decisionNotification.getPenalizedCarName()))
+                        .setColor(Color.ORANGE);
             }
             else {
-                new MessageBuilder()
-                        .append(String.format("#%d", decisionNotification.getIncidentNumber()), MessageDecoration.BOLD)
-                        .append(": ")
-                        .append(decisionNotification.getDecision())
-                        .append(" - ")
-                        .append(getNumber(decisionNotification.getPenalizedCarNumber()), MessageDecoration.BOLD)
-                        .append(" : ")
-                        .append(decisionNotification.getPenalty(), MessageDecoration.BOLD)
-                        .append(". ")
-                        .append(decisionNotification.getReason())
-                        .send(getAnnouncementChannel(server));
+                embed.setTitle(String.format("Incident Decision - %d", decisionNotification.getIncidentNumber()))
+                        .setDescription(decisionNotification.getDecision())
+                        .addField("Reason", decisionNotification.getReason())
+                        .addInlineField("Penalty", decisionNotification.getPenalty())
+                        .addInlineField("Penalized Car", String.format("#%s %s", decisionNotification.getPenalizedCarNumber(), decisionNotification.getPenalizedCarName()))
+                        .setColor(Color.RED);
             }
+            channel.sendMessage(embed);
         }, DecisionNotification.class);
         connection.on("PostTrackLimitViolationDetected", (trackLimitsUpdate) -> {
-            Server server = api.getServerById(serverId).get();
-            new MessageBuilder()
-                    .append(String.format("#%s | %s", trackLimitsUpdate.getCarNumber(), trackLimitsUpdate.getTeamName()), MessageDecoration.BOLD)
-                    .append(": " + (trackLimitsUpdate.isPractice() ? "Practice " : "Race ") + "Track Limit Violation Detected. Total Count: " + trackLimitsUpdate.getNumIncidents())
-                    .send(getRaceControlAnnouncementChannel(server));
+            if (trackLimitsUpdate.getNumIncidents() % 5 == 0) {
+                Server server = api.getServerById(serverId).get();
+                new MessageBuilder()
+                        .append(String.format("#%s | %s", trackLimitsUpdate.getCarNumber(), trackLimitsUpdate.getTeamName()), MessageDecoration.BOLD)
+                        .append(": " + (trackLimitsUpdate.isPractice() ? "Practice " : "Race ") + "Track Limit Violation Detected. Total Count: " + trackLimitsUpdate.getNumIncidents())
+                        .send(getRaceControlAnnouncementChannel(server));
+            }
         }, TrackLimitsUpdate.class);
 
         return connection;

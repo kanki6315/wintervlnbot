@@ -10,7 +10,9 @@ public class DecisionNotification {
     public String decision;
     public String reason;
     public String otherCarNumber;
+    public String otherCarName;
     public String penalizedCarNumber;
+    public String penalizedCarName;
     public String penalty;
 
     public DecisionNotification() {
@@ -62,5 +64,21 @@ public class DecisionNotification {
 
     public void setIncidentNumber(int incidentNumber) {
         this.incidentNumber = incidentNumber;
+    }
+
+    public String getOtherCarName() {
+        return otherCarName;
+    }
+
+    public void setOtherCarName(String otherCarName) {
+        this.otherCarName = otherCarName;
+    }
+
+    public String getPenalizedCarName() {
+        return penalizedCarName;
+    }
+
+    public void setPenalizedCarName(String penalizedCarName) {
+        this.penalizedCarName = penalizedCarName;
     }
 }
