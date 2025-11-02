@@ -9,6 +9,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.channel.ServerVoiceChannel;
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.server.ServerUpdater;
@@ -188,6 +189,10 @@ public class RefreshCommand {
 
                     HashSet<String> entryDriverIds = new HashSet<String>();
                     HashSet<String> entryCrewIds = new HashSet<String>();
+                    // Track roles added per user for embed reporting per team
+                    Map<String, List<String>> rolesAddedByUser = new LinkedHashMap<>();
+                    // Track roles removed per user for embed reporting per team
+                    Map<String, List<String>> rolesRemovedByUser = new LinkedHashMap<>();
 
                     if(entry.getdRoleId() == null) {
                         logger.info(String.format("Skipping sync for %s - %s", entry.getCarNumber(), entry.getTeamName()));
@@ -243,6 +248,10 @@ public class RefreshCommand {
                         if(rolesTBA.size() > 0) {
                             hasUpdates = true;
                             newCounter++;
+                            // collect roles added for embed reporting
+                            String displayName = user.getDisplayName(server);
+                            rolesAddedByUser.computeIfAbsent(displayName, k -> new ArrayList<>())
+                                    .addAll(rolesTBA.stream().map(Role::getName).collect(Collectors.toList()));
                             updater.addRolesToUser(user, rolesTBA);
                         }
                     }
@@ -274,6 +283,10 @@ public class RefreshCommand {
                         if(rolesTBA.size() > 0) {
                             hasUpdates = true;
                             newCounter++;
+                            // collect roles added for embed reporting
+                            String displayName = user.getDisplayName(server);
+                            rolesAddedByUser.computeIfAbsent(displayName, k -> new ArrayList<>())
+                                    .addAll(rolesTBA.stream().map(Role::getName).collect(Collectors.toList()));
                             updater.addRolesToUser(user, rolesTBA);
                         }
                     }
@@ -322,12 +335,49 @@ public class RefreshCommand {
                         rolesTBR.add(entryRole);
                         logger.info("removing entry role from: " + user.getDiscriminatedName());
                         removeCounter++;
+                        // collect roles removed for embed reporting
+                        String displayName = user.getDisplayName(server);
+                        rolesRemovedByUser.computeIfAbsent(displayName, k -> new ArrayList<>())
+                                .addAll(rolesTBR.stream().map(Role::getName).collect(Collectors.toList()));
                         updater.removeRolesFromUser(user, rolesTBR);
                     }
 
                     if(hasUpdates) {
                         logger.info("Queued updates, executing now");
                         updater.update().join();
+
+                        // Send embedded message per team summarizing roles added/removed
+                        if (!rolesAddedByUser.isEmpty() || !rolesRemovedByUser.isEmpty()) {
+                            ServerTextChannel channel = getChannelById(adminChannelId, server);
+                            String teamName = getRoleNameFromEntryOrDriver(entry, drivers);
+                            EmbedBuilder embed = new EmbedBuilder()
+                                    .setTitle("Role updates")
+                                    .setDescription(String.format("Team: %s", teamName));
+
+                            // Merge keys to ensure one field per user
+                            Set<String> nicknames = new LinkedHashSet<>();
+                            nicknames.addAll(rolesAddedByUser.keySet());
+                            nicknames.addAll(rolesRemovedByUser.keySet());
+
+                            for (String nickname : nicknames) {
+                                List<String> addedList = rolesAddedByUser.getOrDefault(nickname, Collections.emptyList());
+                                List<String> removedList = rolesRemovedByUser.getOrDefault(nickname, Collections.emptyList());
+                                StringBuilder sb = new StringBuilder();
+                                if (!addedList.isEmpty()) {
+                                    sb.append("Roles added: ").append(String.join(", ", addedList));
+                                }
+                                if (!removedList.isEmpty()) {
+                                    if (sb.length() > 0) sb.append("\n");
+                                    sb.append("Roles removed: ").append(String.join(", ", removedList));
+                                }
+                                embed.addField(nickname, sb.toString());
+                            }
+
+                            new MessageBuilder()
+                                    .setEmbed(embed)
+                                    .send(channel);
+                        }
+
                         logger.info("Completed updates and sync, sleeping for 5s");
                         Thread.sleep(5000);
                     } else {

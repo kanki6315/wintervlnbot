@@ -67,8 +67,13 @@ public class RaceControlCommand {
                     event.getResponder().respondLater().thenAccept(updater -> {
                         updater.setContent("Socket connection in progress.").update();
                         try {
+                            var channel = getAnnouncementChannel(server);
                             if (startSocket(server)) {
-                                makeAnnouncement("Session", "Open", getAnnouncementChannel(server));
+                                var embed = new EmbedBuilder()
+                                        .setTitle("Session is now open")
+                                        .setDescription("Round 1 | Road Atlanta")
+                                        .setColor(Color.GREEN);
+                                channel.sendMessage(embed);
                                 event.getResponder().followUp()
                                         .setContent("Start Socket Complete!")
                                         .send();
@@ -97,9 +102,14 @@ public class RaceControlCommand {
                 .setOnAction(event -> {
                     event.getResponder().respondLater().thenAccept(updater -> {
                         updater.setContent("Socket connection in progress.").update();
+                        var channel = getAnnouncementChannel(server);
                         try {
                             if (stopSocket(server)) {
-                                makeAnnouncement("Session", "Closed", getAnnouncementChannel(server));
+                                var embed = new EmbedBuilder()
+                                        .setTitle("Session is now closed")
+                                        .setDescription("Round 1 | Road Atlanta")
+                                        .setColor(Color.BLACK);
+                                channel.sendMessage(embed);
                                 event.getResponder().followUp()
                                         .setContent("Stop Socket Complete!")
                                         .send();
@@ -241,7 +251,7 @@ public class RaceControlCommand {
         connection.on("AnnounceProtest", (protestNotification) -> {
             Server server = api.getServerById(serverId).get();
             EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle(String.format("Incident Report - %d", protestNotification.getIncidentNumber()))
+                    .setTitle(String.format("Incident Report - #%d", protestNotification.getIncidentNumber()))
                     .setDescription(protestNotification.getReason())
                     .addInlineField("Filed By", String.format("#%s %s", protestNotification.getProtestingCarNumber(), protestNotification.getProtestingCarName()))
                     .addInlineField("Under Review", String.format("#%s %s", protestNotification.getOffendingCarNumber(), protestNotification.getOffendingCarName()))
@@ -256,13 +266,13 @@ public class RaceControlCommand {
             var embed = new EmbedBuilder();
             var channel = getAnnouncementChannel(server);
             if(decisionNotification.getDecision().equals("No Further Action")) {
-                embed.setTitle(String.format("Incident Decision - %d", decisionNotification.getIncidentNumber()))
+                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
                         .setDescription(decisionNotification.getDecision())
                         .addField("Reason", decisionNotification.getReason())
                         .addField("Involved Cars", String.format("%s + %s", decisionNotification.getPenalizedCarName(), decisionNotification.getOtherCarName()))
                         .setColor(Color.GREEN);
             } else if (decisionNotification.getDecision().equals("Warning")) {
-                embed.setTitle(String.format("Incident Decision - %d", decisionNotification.getIncidentNumber()))
+                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
                         .setDescription(decisionNotification.getDecision())
                         .addField("Reason", decisionNotification.getReason());
                 if (StringUtils.isNotEmpty(decisionNotification.getPenalty())) {
@@ -272,7 +282,7 @@ public class RaceControlCommand {
                         .setColor(Color.ORANGE);
             }
             else {
-                embed.setTitle(String.format("Incident Decision - %d", decisionNotification.getIncidentNumber()))
+                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
                         .setDescription(decisionNotification.getDecision())
                         .addField("Reason", decisionNotification.getReason())
                         .addInlineField("Penalty", decisionNotification.getPenalty())
