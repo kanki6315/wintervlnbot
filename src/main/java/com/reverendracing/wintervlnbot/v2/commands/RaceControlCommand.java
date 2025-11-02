@@ -14,6 +14,8 @@ import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.message.mention.AllowedMentions;
+import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.entity.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,8 @@ public class RaceControlCommand {
 
     @Value("${discord.server_id}")
     private String serverId;
+    @Value("${discord.roles.raceControl_role_id}")
+    private String raceControlRoleId;
     @Value("${discord.roles.admin_role_id}")
     private String adminRoleId;
     @Value("${discord.roles.manager_role_id}")
@@ -294,8 +298,15 @@ public class RaceControlCommand {
         connection.on("PostTrackLimitViolationDetected", (trackLimitsUpdate) -> {
             if (trackLimitsUpdate.getNumIncidents() % 5 == 0) {
                 Server server = api.getServerById(serverId).get();
+                AllowedMentions allowedMentions = new AllowedMentionsBuilder()
+                        .setMentionRoles(true)
+                        .build();
+
+                var role = server.getRoleById(raceControlRoleId).get();
                 new MessageBuilder()
-                        .append(String.format("#%s | %s", trackLimitsUpdate.getCarNumber(), trackLimitsUpdate.getTeamName()), MessageDecoration.BOLD)
+                        .setAllowedMentions(allowedMentions)
+                        .append(role.getMentionTag())
+                        .append(String.format(" #%s | %s", trackLimitsUpdate.getCarNumber(), trackLimitsUpdate.getTeamName()), MessageDecoration.BOLD)
                         .append(": " + (trackLimitsUpdate.isPractice() ? "Practice " : "Race ") + "Track Limit Violation Detected. Total Count: " + trackLimitsUpdate.getNumIncidents())
                         .send(getRaceControlAnnouncementChannel(server));
             }
