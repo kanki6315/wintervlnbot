@@ -230,6 +230,13 @@ public class RefreshCommand {
                             continue;
                         }
                         User user = optUser.get();
+
+                        var driver = drivers.stream().filter(d -> d.getdUserId().equals(discordId)).findFirst().get();
+                        var nickname = user.getNickname(server);
+                        if (nickname.isEmpty() || !nickname.get().equalsIgnoreCase(driver.getDriverName())) {
+                            user.updateNickname(server, driver.getDriverName()).join();
+                        }
+
                         entryDriverIds.add(discordId);
                         List<Role> roles = user.getRoles(server);
                         List<Role> rolesTBA = new ArrayList<>();
