@@ -75,7 +75,7 @@ public class RaceControlCommand {
                             if (startSocket(server)) {
                                 var embed = new EmbedBuilder()
                                         .setTitle("Session is now open")
-                                        .setDescription("Round 1 | Road Atlanta")
+                                        .setDescription("Round 2 | Sebring")
                                         .setColor(Color.GREEN);
                                 channel.sendMessage(embed);
                                 event.getResponder().followUp()
@@ -111,7 +111,7 @@ public class RaceControlCommand {
                             if (stopSocket(server)) {
                                 var embed = new EmbedBuilder()
                                         .setTitle("Session is now closed")
-                                        .setDescription("Round 1 | Road Atlanta")
+                                        .setDescription("Round 2 | Sebring")
                                         .setColor(Color.BLACK);
                                 channel.sendMessage(embed);
                                 event.getResponder().followUp()
@@ -296,7 +296,7 @@ public class RaceControlCommand {
             channel.sendMessage(embed);
         }, DecisionNotification.class);
         connection.on("PostTrackLimitViolationDetected", (trackLimitsUpdate) -> {
-            if (trackLimitsUpdate.getNumIncidents() % 5 == 0) {
+            if (trackLimitsUpdate.getNumIncidents() > 0 && trackLimitsUpdate.getNumIncidents() % 10 == 0) {
                 Server server = api.getServerById(serverId).get();
                 AllowedMentions allowedMentions = new AllowedMentionsBuilder()
                         .setMentionRoles(true)
