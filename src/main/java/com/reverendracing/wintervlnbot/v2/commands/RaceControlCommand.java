@@ -5,6 +5,7 @@ import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
 import com.reverendracing.wintervlnbot.util.model.DecisionNotification;
 import com.reverendracing.wintervlnbot.util.model.ProtestNotification;
+import com.reverendracing.wintervlnbot.util.model.SlowdownNotification;
 import com.reverendracing.wintervlnbot.util.model.TrackLimitsUpdate;
 import io.reactivex.Completable;
 import me.s3ns3iw00.jcommands.type.ServerCommand;
@@ -75,7 +76,7 @@ public class RaceControlCommand {
                             if (startSocket(server)) {
                                 var embed = new EmbedBuilder()
                                         .setTitle("Session is now open")
-                                        .setDescription("Round 2 | Sebring")
+                                        .setDescription("Round 3 | Long Beach & VIR")
                                         .setColor(Color.GREEN);
                                 channel.sendMessage(embed);
                                 event.getResponder().followUp()
@@ -111,7 +112,7 @@ public class RaceControlCommand {
                             if (stopSocket(server)) {
                                 var embed = new EmbedBuilder()
                                         .setTitle("Session is now closed")
-                                        .setDescription("Round 2 | Sebring")
+                                        .setDescription("Round 3 | Long Beach & VIR")
                                         .setColor(Color.BLACK);
                                 channel.sendMessage(embed);
                                 event.getResponder().followUp()
@@ -296,7 +297,7 @@ public class RaceControlCommand {
             channel.sendMessage(embed);
         }, DecisionNotification.class);
         connection.on("PostTrackLimitViolationDetected", (trackLimitsUpdate) -> {
-            if (trackLimitsUpdate.getNumIncidents() > 0 && trackLimitsUpdate.getNumIncidents() % 10 == 0) {
+            if (trackLimitsUpdate.getNumIncidents() > 0 && trackLimitsUpdate.getNumIncidents() % 5 == 0) {
                 Server server = api.getServerById(serverId).get();
                 AllowedMentions allowedMentions = new AllowedMentionsBuilder()
                         .setMentionRoles(true)
@@ -311,6 +312,14 @@ public class RaceControlCommand {
                         .send(getRaceControlAnnouncementChannel(server));
             }
         }, TrackLimitsUpdate.class);
+
+        connection.on("SlowdownNotification", (slowdownNotification) -> {
+            Server server = api.getServerById(serverId).get();
+            new MessageBuilder()
+                    .append(String.format(" #%s | %s", slowdownNotification.getCarNumber(), StringUtils.isNotEmpty(slowdownNotification.getTeamName()) ? slowdownNotification.getCarNumber() : ""), MessageDecoration.BOLD)
+                    .append(": " + (slowdownNotification.isPractice() ? "Practice " : "Race ") + "Slowdown " + (slowdownNotification.isEarnedSlowdown() ? "Earned" : "Cleared"))
+                    .send(getRaceControlAnnouncementChannel(server));
+        }, SlowdownNotification.class);
 
         return connection;
     }
