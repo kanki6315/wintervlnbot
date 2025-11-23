@@ -316,8 +316,8 @@ public class RaceControlCommand {
         connection.on("SlowdownNotification", (slowdownNotification) -> {
             Server server = api.getServerById(serverId).get();
             new MessageBuilder()
-                    .append(String.format(" #%s | %s", slowdownNotification.getCarNumber(), StringUtils.isNotEmpty(slowdownNotification.getTeamName()) ? slowdownNotification.getCarNumber() : ""), MessageDecoration.BOLD)
-                    .append(": " + (slowdownNotification.isPractice() ? "Practice " : "Race ") + "Slowdown " + (slowdownNotification.isEarnedSlowdown() ? "Earned" : "Cleared"))
+                    .append(String.format(" #%s | %s", slowdownNotification.getCarNumber(), StringUtils.isNotEmpty(slowdownNotification.getTeamName()) ? slowdownNotification.getTeamName() : ""), MessageDecoration.BOLD)
+                    .append(": " + (slowdownNotification.isPractice() ? "Practice " : "Race ") + "Slowdown #" + slowdownNotification.getSlowdownCount() + (slowdownNotification.isEarnedSlowdown() ? " Earned" : " Cleared"))
                     .send(getRaceControlAnnouncementChannel(server));
         }, SlowdownNotification.class);
 

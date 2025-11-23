@@ -6,15 +6,9 @@ public class SlowdownNotification {
     private String carNumber;
     private String teamName;
     private boolean earnedSlowdown;
+    private int slowdownCount;
 
     public SlowdownNotification() {
-    }
-
-    public SlowdownNotification(boolean isPractice, String carNumber, String teamName, boolean earnedSlowdown) {
-        this.isPractice = isPractice;
-        this.carNumber = carNumber;
-        this.teamName = teamName;
-        this.earnedSlowdown = earnedSlowdown;
     }
 
     public boolean isPractice() {
@@ -47,5 +41,13 @@ public class SlowdownNotification {
 
     public void setEarnedSlowdown(boolean earnedSlowdown) {
         this.earnedSlowdown = earnedSlowdown;
+    }
+
+    public int getSlowdownCount() {
+        return slowdownCount;
+    }
+
+    public void setSlowdownCount(int slowdownCount) {
+        this.slowdownCount = slowdownCount;
     }
 }
