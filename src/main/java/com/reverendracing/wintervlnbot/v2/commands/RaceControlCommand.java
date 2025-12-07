@@ -76,7 +76,7 @@ public class RaceControlCommand {
                             if (startSocket(server)) {
                                 var embed = new EmbedBuilder()
                                         .setTitle("Session is now open")
-                                        .setDescription("Round 3 | Long Beach & VIR")
+                                        .setDescription("Round 4 | Daytona")
                                         .setColor(Color.GREEN);
                                 channel.sendMessage(embed);
                                 event.getResponder().followUp()
@@ -112,7 +112,7 @@ public class RaceControlCommand {
                             if (stopSocket(server)) {
                                 var embed = new EmbedBuilder()
                                         .setTitle("Session is now closed")
-                                        .setDescription("Round 3 | Long Beach & VIR")
+                                        .setDescription("Round 4 | Daytona")
                                         .setColor(Color.BLACK);
                                 channel.sendMessage(embed);
                                 event.getResponder().followUp()
