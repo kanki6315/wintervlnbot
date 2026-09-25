@@ -265,37 +265,7 @@ public class RaceControlCommand {
             var channel = getAnnouncementChannel(server);
             channel.sendMessage(embed);
         }, ProtestNotification.class);
-        connection.on("AnnounceDecision", (decisionNotification) -> {
-            Server server = api.getServerById(serverId).get();
-
-            var embed = new EmbedBuilder();
-            var channel = getAnnouncementChannel(server);
-            if(decisionNotification.getDecision().equals("No Further Action")) {
-                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
-                        .setDescription(decisionNotification.getDecision())
-                        .addField("Reason", decisionNotification.getReason())
-                        .addField("Involved Cars", String.format("%s + %s", decisionNotification.getPenalizedCarName(), decisionNotification.getOtherCarName()))
-                        .setColor(Color.GREEN);
-            } else if (decisionNotification.getDecision().equals("Warning")) {
-                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
-                        .setDescription(decisionNotification.getDecision())
-                        .addField("Reason", decisionNotification.getReason());
-                if (StringUtils.isNotEmpty(decisionNotification.getPenalty())) {
-                    embed.addInlineField("Penalty", decisionNotification.getPenalty());
-                }
-                embed.addInlineField("Warned Car", String.format("#%s %s", decisionNotification.getPenalizedCarNumber(), decisionNotification.getPenalizedCarName()))
-                        .setColor(Color.ORANGE);
-            }
-            else {
-                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
-                        .setDescription(decisionNotification.getDecision())
-                        .addField("Reason", decisionNotification.getReason())
-                        .addInlineField("Penalty", decisionNotification.getPenalty())
-                        .addInlineField("Penalized Car", String.format("#%s %s", decisionNotification.getPenalizedCarNumber(), decisionNotification.getPenalizedCarName()))
-                        .setColor(Color.RED);
-            }
-            channel.sendMessage(embed);
-        }, DecisionNotification.class);
+        connection.on("AnnounceDecision", this::handleDecisionNotification, DecisionNotification.class);
         connection.on("PostTrackLimitViolationDetected", (trackLimitsUpdate) -> {
             if (trackLimitsUpdate.getNumIncidents() > 0 && trackLimitsUpdate.getNumIncidents() % 5 == 0) {
                 Server server = api.getServerById(serverId).get();
@@ -322,6 +292,55 @@ public class RaceControlCommand {
         }, SlowdownNotification.class);
 
         return connection;
+    }
+
+    // Keep application failures inside the callback so SignalR stays connected.
+    void handleDecisionNotification(DecisionNotification decisionNotification) {
+        if (decisionNotification == null || StringUtils.isBlank(decisionNotification.getDecision())) {
+            logger.warn("Skipping decision notification with missing or blank decision (incident #{})",
+                    decisionNotification == null ? "unknown" : decisionNotification.getIncidentNumber());
+            return;
+        }
+
+        try {
+            Server server = api.getServerById(serverId).get();
+
+            var embed = new EmbedBuilder();
+            var channel = getAnnouncementChannel(server);
+            if("No Further Action".equals(decisionNotification.getDecision())) {
+                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
+                        .setDescription(decisionNotification.getDecision())
+                        .addField("Reason", StringUtils.defaultIfBlank(decisionNotification.getReason(), "Not provided"))
+                        .addField("Involved Cars", String.format("%s + %s", decisionNotification.getPenalizedCarName(), decisionNotification.getOtherCarName()))
+                        .setColor(Color.GREEN);
+            } else if ("Warning".equals(decisionNotification.getDecision())) {
+                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
+                        .setDescription(decisionNotification.getDecision())
+                        .addField("Reason", StringUtils.defaultIfBlank(decisionNotification.getReason(), "Not provided"));
+                if (StringUtils.isNotBlank(decisionNotification.getPenalty())) {
+                    embed.addInlineField("Penalty", decisionNotification.getPenalty());
+                }
+                embed.addInlineField("Warned Car", String.format("#%s %s", decisionNotification.getPenalizedCarNumber(), decisionNotification.getPenalizedCarName()))
+                        .setColor(Color.ORANGE);
+            }
+            else {
+                embed.setTitle(String.format("Incident Decision - #%d", decisionNotification.getIncidentNumber()))
+                        .setDescription(decisionNotification.getDecision())
+                        .addField("Reason", StringUtils.defaultIfBlank(decisionNotification.getReason(), "Not provided"))
+                        .addInlineField("Penalty", StringUtils.defaultIfBlank(decisionNotification.getPenalty(), "Not provided"))
+                        .addInlineField("Penalized Car", String.format("#%s %s", decisionNotification.getPenalizedCarNumber(), decisionNotification.getPenalizedCarName()))
+                        .setColor(Color.RED);
+            }
+            channel.sendMessage(embed).whenComplete((message, error) -> {
+                if (error != null) {
+                    logger.error("Failed to deliver decision for incident #{}",
+                            decisionNotification.getIncidentNumber(), error);
+                }
+            });
+        } catch (RuntimeException error) {
+            logger.error("Failed to process decision for incident #{}",
+                    decisionNotification.getIncidentNumber(), error);
+        }
     }
 
     private ServerTextChannel getAnnouncementChannel(Server server) {

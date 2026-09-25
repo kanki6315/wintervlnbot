@@ -45,3 +45,7 @@ dependencies {
 	implementation 'com.h2database:h2:1.4.197'
 	implementation 'io.bretty:console-table-builder:1.2'
 }
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
